@@ -5,7 +5,7 @@ python:
   - 3.5
 # command to install dependencies
 before_install:
-  - pip install pytest-cov
+  - pip install -r src/test-requirements.txt
 install:
   - cd src
   - python setup.py install

@@ -60,7 +60,7 @@ class TestAParser:
         )
     )
     def test_should_parent_cmd_exit_or_raise_error(self, silent_exit, exception, test_func, aparser):
-        from cmdtree.env import env
+        from cmdtree.registry import env
         env.silent_exit = silent_exit
         parent = aparser.add_cmd("parent")
         parent.add_cmd("child", func=test_func)

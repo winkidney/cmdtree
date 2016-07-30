@@ -4,7 +4,7 @@ import sys
 import six
 
 from cmdtree.exceptions import ArgumentParseError
-from cmdtree.env import env
+from cmdtree.registry import env
 
 
 def vars_(object=None):
@@ -31,6 +31,9 @@ class AParser(ArgumentParser):
 
     def add_cmd(self, name, help="", func=None):
         """
+        If func is None, this is regarded as a sub-parser which can contains
+        sub-command.
+        Else, this is a leaf node in cmd tree which can not add sub-command.
         :rtype: AParser
         """
         if self.subparsers is None:
