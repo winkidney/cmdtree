@@ -1,18 +1,3 @@
-
-class Node(object):
-    def __init__(self, name, cmd, children):
-        self.name = name
-        self.cmd = cmd
-        self.children = children
-
-    def as_dict(self):
-        return {
-            "name": self.name,
-            "cmd": self.cmd,
-            "children": self.children
-        }
-
-
 def _mk_cmd_node(cmd_name, cmd_obj):
     return {
         "name": cmd_name,
