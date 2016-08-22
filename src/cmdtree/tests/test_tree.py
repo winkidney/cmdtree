@@ -121,7 +121,7 @@ class TestCmdTree:
             self,
             cmd_tree
     ):
-        cmd_tree._add_parent_commands(['new_cmd', 'hello'])
+        cmd_tree.add_parent_commands(['new_cmd', 'hello'])
         assert "hello" in \
                cmd_tree.tree['children']['new_cmd']['children']
         assert {} == \
@@ -139,6 +139,6 @@ class TestCmdTree:
         assert str(excinfo.value) == msg
 
     def test_should_add_parent_cmd_not_repeat_add(self, cmd_tree_with_tree):
-        orig_node = cmd_tree_with_tree._add_parent_commands(['test_nested', 'child'])
-        new_node = cmd_tree_with_tree._add_parent_commands(['test_nested', 'child'])
+        orig_node = cmd_tree_with_tree.add_parent_commands(['test_nested', 'child'])
+        new_node = cmd_tree_with_tree.add_parent_commands(['test_nested', 'child'])
         assert id(orig_node['cmd']) == id(new_node['cmd'])

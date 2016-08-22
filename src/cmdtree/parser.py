@@ -63,3 +63,19 @@ class AParser(ArgumentParser):
             sys.exit(status)
         else:
             raise ArgumentParseError(message)
+
+    def argument(self, name, help=None):
+        if name.startswith("--"):
+            raise ValueError(
+                "positional argument [{0}] can not contains `--`".format(name)
+            )
+        return self.add_argument(name, help=help)
+
+    def option(self, name, help=help, is_flag=False):
+        _name = name
+        if not name.startswith("--"):
+            _name = "--" + name
+        if is_flag:
+            return self.add_argument(_name, help=help, action="store_true")
+        else:
+            return self.add_argument(_name, help=help)

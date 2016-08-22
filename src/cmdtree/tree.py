@@ -1,3 +1,6 @@
+from cmdtree.parser import AParser
+
+
 def _mk_cmd_node(cmd_name, cmd_obj):
     return {
         "name": cmd_name,
@@ -12,11 +15,14 @@ class CmdTree(object):
     ['parent_cmd', 'child_cmd'].
     """
 
-    def __init__(self, root_parser):
+    def __init__(self, root_parser=None):
         """
         :type root_parser: cmdtree.parser.AParser
         """
-        self.root = root_parser
+        if root_parser is not None:
+            self.root = root_parser
+        else:
+            self.root = AParser()
         self.tree = {
             "name": "root",
             "cmd": self.root,
@@ -64,10 +70,14 @@ class CmdTree(object):
         return new_path, existed_path
 
     def add_commands(self, cmd_path, func):
-        parent = self._add_parent_commands(cmd_path[:-1])
-        return parent['cmd'].add_cmd(name=cmd_path[-1], func=func)
+        cmd_name = cmd_path[-1]
+        parent = self.add_parent_commands(cmd_path[:-1])
+        sub_command = parent['cmd'].add_cmd(name=cmd_name, func=func)
+        node = _mk_cmd_node(cmd_name, sub_command)
+        self._add_node(node, cmd_path=cmd_path)
+        return sub_command
 
-    def _add_parent_commands(self, cmd_path):
+    def add_parent_commands(self, cmd_path):
         """
         Create parent command object in cmd tree then return
         the last parent command object.
