@@ -51,10 +51,15 @@ class AParser(ArgumentParser):
 
     def run(self, args=None, namespace=None):
         args = self.parse_args(args, namespace)
-        if args._func:
+        _func = getattr(args, "_func", None)
+        if _func:
             return args._func(**vars_(args))
         else:
-            return args
+            raise ValueError(
+                "No function binding for args `{args}`".format(
+                    args=args
+                )
+            )
 
     def exit(self, status=0, message=None):
         if message:
@@ -65,15 +70,15 @@ class AParser(ArgumentParser):
             raise ArgumentParseError(message)
 
     def argument(self, name, help=None):
-        if name.startswith("--"):
+        if name.startswith("-"):
             raise ValueError(
-                "positional argument [{0}] can not contains `--`".format(name)
+                "positional argument [{0}] can not contains `-` in".format(name)
             )
         return self.add_argument(name, help=help)
 
     def option(self, name, help=help, is_flag=False):
         _name = name
-        if not name.startswith("--"):
+        if not name.startswith("-"):
             _name = "--" + name
         if is_flag:
             return self.add_argument(_name, help=help, action="store_true")
