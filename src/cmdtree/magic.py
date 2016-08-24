@@ -5,21 +5,36 @@ from cmdtree.registry import env
 CMD_META_NAME = "meta"
 
 
+def _get_cmd_path(path_prefix, cmd_name):
+    full_path = path_prefix
+    if path_prefix is None:
+        full_path = []
+    full_path.append(cmd_name)
+    return full_path
+
+
 def _mk_group(name, help=None, path_prefix=None):
 
     def wrapper(func):
         _name = name
-        if name is None:
-            _name = _get_func_name(func)
+        _func = func
 
-        full_path = path_prefix
-        if path_prefix is None:
-            full_path = []
-        full_path.append(name)
+        def apply2parser(parser):
+            pass
+
+        if isinstance(func, MetaCmd):
+            _func = func.func
+            apply2parser = lambda parser_: func.meta.parser.apply2parser(parser_)
+
+        if name is None:
+            _name = _get_func_name(_func)
+
+        full_path = _get_cmd_path(path_prefix, name)
 
         tree = _get_tree()
-        parser = tree.add_parent_commands(full_path)
-        _group = Group(func, _name, help=help, full_path=full_path, parser=parser)
+        parser = tree.add_parent_commands(full_path)['cmd']
+        _group = Group(_func, _name, parser, help=help, full_path=full_path)
+        apply2parser(parser)
         return _group
     return wrapper
 
@@ -32,14 +47,26 @@ def _mk_cmd(name, help=None, path_prefix=None):
                     func
                 )
             )
+        _func = func
+
+        def apply2parser(parser):
+            pass
+
+        if isinstance(func, MetaCmd):
+            _func = func.func
+            apply2parser = lambda parser_: func.meta.parser.apply2parser(parser_)
+
         name_ = name
         if name is None:
-            name_ = _get_func_name(func)
+            name_ = _get_func_name(_func)
 
+        full_path = _get_cmd_path(path_prefix, name)
         tree = _get_tree()
-        parser = tree.add_commands([name], func)
+        parser = tree.add_commands(full_path, _func)
+        apply2parser(parser)
+
         return Cmd(
-            func,
+            _func,
             name=name_,
             help=help,
             parser=parser
@@ -54,10 +81,52 @@ class CmdMeta(object):
         "parser",
     )
 
-    def __init__(self, name, full_path=None, parser=None):
+    def __init__(self, name=None, full_path=None, parser=None):
         self.full_path = full_path or []
         self.name = name
         self.parser = parser
+
+
+class ParserProxy(object):
+    __slots__ = (
+        "options",
+        "arguments",
+    )
+
+    def __init__(self):
+        self.options = []
+        self.arguments = []
+
+    def option(self, *args, **kwargs):
+        self.options.append((args, kwargs))
+
+    def argument(self, *args, **kwargs):
+        self.arguments.append((args, kwargs))
+
+    def apply2parser(self, parser):
+        """
+        :type parser: cmdtree.parser.AParser
+        :rtype: cmdtree.parser.AParser
+        """
+        for args, kwargs in self.options:
+            parser.option(*args, **kwargs)
+        for args, kwargs in self.arguments:
+            parser.argument(*args, **kwargs)
+        return parser
+
+
+class MetaCmd(object):
+    """
+    Used to store original cmd info for cmd build proxy.
+    """
+    __slots__ = (
+        "func",
+        "meta",
+    )
+
+    def __init__(self, func):
+        self.func = func
+        self.meta = CmdMeta(parser=ParserProxy())
 
 
 class Group(object):
@@ -65,7 +134,7 @@ class Group(object):
         """
         :type func: callable
         :type name: str
-        :type parser: cmdtree.parser.CmdTree
+        :type parser: cmdtree.parser.AParser
         :type help: str
         :type full_path: tuple or list
         """
@@ -134,18 +203,28 @@ def command(name=None, help=None):
 def argument(name, help=None):
 
     def wrapper(func):
-        assert isinstance(func, (Group, Cmd))
-        parser = func.meta.parser
-        parser.argument(name, help=help)
-        return func
+        if isinstance(func, (Group, Cmd, MetaCmd)):
+            parser = func.meta.parser
+            parser.argument(name, help=help)
+            return func
+        else:
+            meta_cmd = MetaCmd(func)
+            parser = meta_cmd.meta.parser
+            parser.argument(name, help=help)
+            return meta_cmd
     return wrapper
 
 
 def option(name, help=None, is_flag=False):
 
     def wrapper(func):
-        assert isinstance(func, (Group, Cmd))
-        parser = func.meta.parser
-        parser.option(name=name, help=help, is_flag=is_flag)
-        return func
+        if isinstance(func, (Group, Cmd)):
+            parser = func.meta.parser
+            parser.option(name, help=help, is_flag=is_flag)
+            return func
+        else:
+            meta_cmd = MetaCmd(func)
+            parser = meta_cmd.meta.parser
+            parser.option(name, help=help, is_flag=is_flag)
+            return meta_cmd
     return wrapper
