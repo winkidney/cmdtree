@@ -7,6 +7,10 @@ from cmdtree.exceptions import ArgumentParseError
 from cmdtree.registry import env
 
 
+def _normalize_arg_name(arg_name):
+    return arg_name.replace("-", "_")
+
+
 def vars_(object=None):
     """
     Clean all of the property starts with "_" then
@@ -17,7 +21,7 @@ def vars_(object=None):
     for key, value in six.iteritems(vars_dict):
         if key.startswith("_"):
             continue
-        filtered_vars[key] = value
+        filtered_vars[_normalize_arg_name(key)] = value
     return filtered_vars
 
 
@@ -52,6 +56,7 @@ class AParser(ArgumentParser):
     def run(self, args=None, namespace=None):
         args = self.parse_args(args, namespace)
         _func = getattr(args, "_func", None)
+
         if _func:
             return args._func(**vars_(args))
         else:
