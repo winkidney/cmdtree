@@ -29,6 +29,18 @@ def test_func():
 
 
 @pytest.mark.parametrize(
+    "arg_name, expected",
+    (
+        ("hello_world", "hello_world"),
+        ("hello-world", "hello_world"),
+    )
+)
+def test_normalize_arg_name(arg_name, expected):
+    from cmdtree.parser import _normalize_arg_name
+    assert _normalize_arg_name(arg_name) == expected
+
+
+@pytest.mark.parametrize(
     "p_dict, expected",
     (
             ({"_k": "v", "k": "v"}, {"k": "v"}),
@@ -119,8 +131,8 @@ class TestAParser:
     @pytest.mark.parametrize(
         "is_flag",
         (
-                (True, ),
-                (False, ),
+                True,
+                False,
         )
     )
     def test_option_should_work_with_is_flag(self, is_flag, test_func, aparser):
@@ -130,4 +142,4 @@ class TestAParser:
             if is_flag:
                 assert mocked_add.called_with("name", None)
             else:
-                assert mocked_add.called_with("name", None, True)
+                assert mocked_add.called_with("name", None, False)
