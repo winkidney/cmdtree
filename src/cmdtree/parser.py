@@ -81,11 +81,13 @@ class AParser(ArgumentParser):
             )
         return self.add_argument(name, help=help)
 
-    def option(self, name, help=help, is_flag=False):
+    def option(self, name, help=help, is_flag=False, default=None):
         _name = name
         if not name.startswith("-"):
             _name = "--" + name
+        kwargs = dict(help=help)
         if is_flag:
-            return self.add_argument(_name, help=help, action="store_true")
-        else:
-            return self.add_argument(_name, help=help)
+            kwargs['action'] = "store_true"
+        if default is not None:
+            kwargs['default'] = default
+        return self.add_argument(_name, **kwargs)

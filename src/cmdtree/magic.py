@@ -215,16 +215,16 @@ def argument(name, help=None):
     return wrapper
 
 
-def option(name, help=None, is_flag=False):
+def option(name, help=None, is_flag=False, default=None):
 
     def wrapper(func):
         if isinstance(func, (Group, Cmd)):
             parser = func.meta.parser
-            parser.option(name, help=help, is_flag=is_flag)
+            parser.option(name, help=help, is_flag=is_flag, default=default)
             return func
         else:
             meta_cmd = MetaCmd(func)
             parser = meta_cmd.meta.parser
-            parser.option(name, help=help, is_flag=is_flag)
+            parser.option(name, help=help, is_flag=is_flag, default=default)
             return meta_cmd
     return wrapper
