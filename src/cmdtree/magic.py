@@ -56,18 +56,18 @@ def _mk_cmd(name, help=None, path_prefix=None):
             _func = func.func
             apply2parser = lambda parser_: func.meta.parser.apply2parser(parser_)
 
-        name_ = name
+        _name = name
         if name is None:
-            name_ = _get_func_name(_func)
+            _name = _get_func_name(_func)
 
-        full_path = _get_cmd_path(path_prefix, name)
+        full_path = _get_cmd_path(path_prefix, _name)
         tree = _get_tree()
         parser = tree.add_commands(full_path, _func)
         apply2parser(parser)
 
         return Cmd(
             _func,
-            name=name_,
+            name=_name,
             help=help,
             parser=parser
         )
