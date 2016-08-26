@@ -161,18 +161,6 @@ class Cmd(object):
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
 
-    def argument(self):
-        pass
-
-    def option(self):
-        pass
-
-
-class CommandCollection(object):
-    def __init__(self, sources):
-        assert isinstance(sources, (tuple, list))
-        self.sources = sources
-
 
 def _get_tree():
     """
