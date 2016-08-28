@@ -13,28 +13,69 @@ def _get_cmd_path(path_prefix, cmd_name):
     return full_path
 
 
+def _apply2parser(arguments, options, parser):
+    """
+    :return the parser itself
+    :type arguments: list[list[str]]
+    :type options: list[dict[str, T]]
+    :type parser: cmdtree.parser.AParser
+    :rtype: cmdtree.parser.AParser
+    """
+    for args, kwargs in options:
+        parser.option(*args, **kwargs)
+    for args, kwargs in arguments:
+        parser.argument(*args, **kwargs)
+    return parser
+
+
+def apply2parser(meta_cmd, parser):
+    """
+    Apply a MetaCmd's arguments and options
+    to a parser of argparse.
+    :type meta_cmd: callable or CmdProxy
+    :type parser: cmdtree.parser.AParser
+    :rtype: cmdtree.parser.AParser
+    """
+    if isinstance(meta_cmd, CmdProxy):
+        parser_proxy = meta_cmd.meta.parser
+        _apply2parser(
+            parser_proxy.arguments,
+            parser_proxy.options,
+            parser,
+        )
+    return parser
+
+
 def _mk_group(name, help=None, path_prefix=None):
 
     def wrapper(func):
+        if isinstance(func, Group):
+            raise ValueError(
+                "You can not register group `{name}` more than once".format(
+                    name=name
+                )
+            )
         _name = name
         _func = func
 
-        def apply2parser(parser):
-            pass
-
-        if isinstance(func, MetaCmd):
+        if isinstance(func, CmdProxy):
             _func = func.func
-            apply2parser = lambda parser_: func.meta.parser.apply2parser(parser_)
 
         if name is None:
             _name = _get_func_name(_func)
 
-        full_path = _get_cmd_path(path_prefix, name)
+        full_path = _get_cmd_path(path_prefix, _name)
 
         tree = _get_tree()
         parser = tree.add_parent_commands(full_path)['cmd']
-        _group = Group(_func, _name, parser, help=help, full_path=full_path)
-        apply2parser(parser)
+        _group = Group(
+            _func,
+            _name,
+            parser,
+            help=help,
+            full_path=full_path,
+        )
+        apply2parser(func, parser)
         return _group
     return wrapper
 
@@ -49,12 +90,8 @@ def _mk_cmd(name, help=None, path_prefix=None):
             )
         _func = func
 
-        def apply2parser(parser):
-            pass
-
-        if isinstance(func, MetaCmd):
+        if isinstance(func, CmdProxy):
             _func = func.func
-            apply2parser = lambda parser_: func.meta.parser.apply2parser(parser_)
 
         _name = name
         if name is None:
@@ -63,14 +100,16 @@ def _mk_cmd(name, help=None, path_prefix=None):
         full_path = _get_cmd_path(path_prefix, _name)
         tree = _get_tree()
         parser = tree.add_commands(full_path, _func)
-        apply2parser(parser)
-
-        return Cmd(
+        _cmd = Cmd(
             _func,
-            name=_name,
+            _name,
+            parser,
             help=help,
-            parser=parser
+            full_path=full_path,
         )
+        apply2parser(func, parser)
+
+        return _cmd
     return wrapper
 
 
@@ -103,19 +142,8 @@ class ParserProxy(object):
     def argument(self, *args, **kwargs):
         self.arguments.append((args, kwargs))
 
-    def apply2parser(self, parser):
-        """
-        :type parser: cmdtree.parser.AParser
-        :rtype: cmdtree.parser.AParser
-        """
-        for args, kwargs in self.options:
-            parser.option(*args, **kwargs)
-        for args, kwargs in self.arguments:
-            parser.argument(*args, **kwargs)
-        return parser
 
-
-class MetaCmd(object):
+class CmdProxy(object):
     """
     Used to store original cmd info for cmd build proxy.
     """
@@ -191,12 +219,12 @@ def command(name=None, help=None):
 def argument(name, help=None, type=None):
 
     def wrapper(func):
-        if isinstance(func, (Group, Cmd, MetaCmd)):
+        if isinstance(func, (Group, Cmd, CmdProxy)):
             parser = func.meta.parser
             parser.argument(name, help=help, type=type)
             return func
         else:
-            meta_cmd = MetaCmd(func)
+            meta_cmd = CmdProxy(func)
             parser = meta_cmd.meta.parser
             parser.argument(name, help=help, type=type)
             return meta_cmd
@@ -217,7 +245,7 @@ def option(name, help=None, is_flag=False, default=None, type=None):
             )
             return func
         else:
-            meta_cmd = MetaCmd(func)
+            meta_cmd = CmdProxy(func)
             parser = meta_cmd.meta.parser
             parser.option(
                 name,

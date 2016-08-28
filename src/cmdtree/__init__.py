@@ -1,6 +1,6 @@
 from cmdtree.parser import AParser
 from cmdtree.registry import env
-from cmdtree.magic import (
+from cmdtree.shortcuts import (
     argument,
     option,
     command,
