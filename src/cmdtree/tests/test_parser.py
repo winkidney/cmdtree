@@ -112,7 +112,7 @@ class TestAParser:
                     cmd.argument(arg_name)
             else:
                 cmd.argument(arg_name)
-                assert mocked_add.called_with(arg_name, None)
+                mocked_add.assert_called_with(arg_name, help=None)
 
     @pytest.mark.parametrize(
         "arg_name, expected_name",
@@ -126,7 +126,7 @@ class TestAParser:
         cmd = aparser.add_cmd("execute", func=test_func)
         with mock.patch.object(cmd, "add_argument") as mocked_add:
             cmd.option(arg_name)
-            assert mocked_add.called_with(expected_name, None)
+            mocked_add.assert_called_with(expected_name, help=None)
 
     @pytest.mark.parametrize(
         "is_flag",
@@ -140,6 +140,58 @@ class TestAParser:
         with mock.patch.object(cmd, "add_argument") as mocked_add:
             cmd.option("name", is_flag=is_flag)
             if is_flag:
-                assert mocked_add.called_with("name", None)
+                mocked_add.assert_called_with("--name", help=None, action="store_true")
             else:
-                assert mocked_add.called_with("name", None, False)
+                mocked_add.assert_called_with("--name", help=None)
+
+    @pytest.mark.parametrize(
+        "default",
+        (
+                None,
+                1,
+        )
+    )
+    def test_option_should_work_with_default_value(self, default, aparser):
+        cmd = aparser.add_cmd("execute", func=test_func)
+        with mock.patch.object(cmd, "add_argument") as mocked_add:
+            cmd.option("name", default=default)
+            if default is None:
+                mocked_add.assert_called_with("--name", help=None)
+            else:
+                mocked_add.assert_called_with("--name", help=None, default=default)
+
+    @pytest.mark.parametrize(
+        "type_func, kwargs",
+        (
+            (mock.Mock(), {"help": None, "type": int}),
+            (None, {"help": None}),
+        )
+    )
+    def test_add_argument_work_with_type(
+            self, type_func, kwargs, aparser
+    ):
+        if type_func is not None:
+            type_func.return_value = {"type": int}
+        with mock.patch.object(aparser, "add_argument") as mocked_add:
+            aparser.argument("name", type=type_func)
+            if type_func is not None:
+                assert type_func.called
+            mocked_add.assert_called_with("name", **kwargs)
+
+    @pytest.mark.parametrize(
+        "type_func, kwargs",
+        (
+                (mock.Mock(), {"help": None, "type": int}),
+                (None, {"help": None}),
+        )
+    )
+    def test_add_option_work_with_type(
+            self, type_func, kwargs, aparser
+    ):
+        if type_func is not None:
+            type_func.return_value = {"type": int}
+        with mock.patch.object(aparser, "add_argument") as mocked_add:
+            aparser.option("name", type=type_func)
+            if type_func is not None:
+                assert type_func.called
+            mocked_add.assert_called_with("--name", **kwargs)
