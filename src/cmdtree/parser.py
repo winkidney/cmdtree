@@ -75,21 +75,21 @@ class AParser(ArgumentParser):
             raise ArgumentParseError(message)
 
     def argument(self, name, help=None, type=None):
-        kwrags = {"help": help}
+        kwargs = {"help": help}
         if name.startswith("-"):
             raise ValueError(
                 "positional argument [{0}] can not contains `-` in".format(name)
             )
 
         if type is not None:
-            kwrags.update(
+            kwargs.update(
                 type()
             )
         return self.add_argument(
-            name, **kwrags
+            name, **kwargs
         )
 
-    def option(self, name, help=help, is_flag=False, default=None, type=None):
+    def option(self, name, help=None, is_flag=False, default=None, type=None):
         _name = name
         if not name.startswith("-"):
             _name = "--" + name
