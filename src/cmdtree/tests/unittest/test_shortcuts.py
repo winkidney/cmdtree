@@ -229,3 +229,11 @@ class TestCmd:
 
 def test_get_func_name(do_nothing):
     assert shortcuts._get_func_name(do_nothing) == "func"
+
+
+def test_get_tree_always_get_the_same_one():
+    from cmdtree.tree import CmdTree
+    tree1 = shortcuts._get_tree()
+    tree2 = shortcuts._get_tree()
+    assert isinstance(tree1, CmdTree)
+    assert tree1 is tree2
