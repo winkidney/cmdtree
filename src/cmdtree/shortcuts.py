@@ -16,8 +16,8 @@ def _get_cmd_path(path_prefix, cmd_name):
 def _apply2parser(arguments, options, parser):
     """
     :return the parser itself
-    :type arguments: list[list[str]]
-    :type options: list[dict[str, T]]
+    :type arguments: list[list[T], dict[str, T]]
+    :type options: list[list[T], dict[str, T]]
     :type parser: cmdtree.parser.AParser
     :rtype: cmdtree.parser.AParser
     """
@@ -28,16 +28,16 @@ def _apply2parser(arguments, options, parser):
     return parser
 
 
-def apply2parser(meta_cmd, parser):
+def apply2parser(cmd_proxy, parser):
     """
-    Apply a MetaCmd's arguments and options
+    Apply a CmdProxy's arguments and options
     to a parser of argparse.
-    :type meta_cmd: callable or CmdProxy
+    :type cmd_proxy: callable or CmdProxy
     :type parser: cmdtree.parser.AParser
     :rtype: cmdtree.parser.AParser
     """
-    if isinstance(meta_cmd, CmdProxy):
-        parser_proxy = meta_cmd.meta.parser
+    if isinstance(cmd_proxy, CmdProxy):
+        parser_proxy = cmd_proxy.meta.parser
         _apply2parser(
             parser_proxy.arguments,
             parser_proxy.options,
