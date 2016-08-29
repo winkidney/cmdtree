@@ -7,8 +7,8 @@ from cmdtree import shortcuts
 @pytest.fixture()
 def do_nothing():
 
-    def func():
-        pass
+    def func(*args, **kwargs):
+        return "do_nothing"
 
     return func
 
@@ -21,6 +21,11 @@ def mocked_parser():
 @pytest.fixture()
 def parser_proxy():
     return shortcuts.ParserProxy()
+
+
+@pytest.fixture()
+def group(mocked_parser, do_nothing):
+    return shortcuts.Group(do_nothing, "do_nothing", mocked_parser, full_path=["do_nothing", ])
 
 
 @pytest.mark.parametrize(
@@ -107,25 +112,6 @@ class TestMkGroup:
             assert apply2parser.called
 
 
-def test_cmd_meta_should_handle_none_value_of_path():
-    cmd_meta = shortcuts.CmdMeta()
-    assert cmd_meta.full_path == []
-
-
-class TestParserProxy:
-    def test_should_option_add_options(self, parser_proxy):
-        parser_proxy.option("name", help="help")
-        assert parser_proxy.options == [(
-            ("name", ), {"help": "help"}
-        )]
-
-    def test_should_argument_add_options(self, parser_proxy):
-        parser_proxy.argument("name", help="help")
-        assert parser_proxy.arguments == [(
-            ("name", ), {"help": "help"}
-        )]
-
-
 class TestMkCmd:
     def test_should_return_cmd_with_cmd(self, do_nothing):
 
@@ -162,3 +148,52 @@ class TestMkCmd:
             cmd_proxy = shortcuts.CmdProxy(do_nothing)
             shortcuts._mk_cmd("name")(cmd_proxy)
             assert apply2parser.called
+
+
+def test_cmd_meta_should_handle_none_value_of_path():
+    cmd_meta = shortcuts.CmdMeta()
+    assert cmd_meta.full_path == []
+
+
+class TestParserProxy:
+    def test_should_option_add_options(self, parser_proxy):
+        parser_proxy.option("name", help="help")
+        assert parser_proxy.options == [(
+            ("name", ), {"help": "help"}
+        )]
+
+    def test_should_argument_add_options(self, parser_proxy):
+        parser_proxy.argument("name", help="help")
+        assert parser_proxy.arguments == [(
+            ("name", ), {"help": "help"}
+        )]
+
+
+class TestGroup:
+    def test_should_group_instance_call_func(self, group):
+        assert group() == "do_nothing"
+
+    def test_should_full_path_be_none_if_path_is_none(self, group):
+        assert group.meta.full_path == ["do_nothing"]
+
+    def test_should_command_call_mk_command(self, group):
+        with mock.patch.object(
+                shortcuts, "_mk_cmd"
+        ) as mocked_mk:
+            group.command("name")
+            mocked_mk.assert_called_with(
+                "name",
+                help=None,
+                path_prefix=["do_nothing", ]
+            )
+
+    def test_should_group_call_mk_group(self, group):
+        with mock.patch.object(
+                shortcuts, "_mk_group"
+        ) as mocked_mk:
+            group.group("name")
+            mocked_mk.assert_called_with(
+                "name",
+                help=None,
+                path_prefix=["do_nothing", ]
+            )

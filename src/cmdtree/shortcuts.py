@@ -167,14 +167,20 @@ class Group(object):
         :type full_path: tuple or list
         """
         self.func = func
-        self.meta = CmdMeta(name=name, full_path=full_path, parser=parser)
+        self.meta = CmdMeta(
+            name=name,
+            full_path=full_path,
+            parser=parser,
+        )
         self.help = help
 
     def __call__(self, *args, **kwargs):
+        # TODO(winkidney): This func will not work in
+        # any case now.Be left now for possible call.
         return self.func(*args, **kwargs)
 
     def command(self, name=None, help=None):
-        return _mk_cmd(name=name, help=help, path_prefix=self.meta.full_path)
+        return _mk_cmd(name, help=help, path_prefix=self.meta.full_path)
 
     def group(self, name=None, help=None):
         return _mk_group(name, help=help, path_prefix=self.meta.full_path)
