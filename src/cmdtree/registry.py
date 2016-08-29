@@ -12,6 +12,6 @@ class ENV(object):
         """
         self.silent_exit = True
         self.tree = None
-        self.entry = lambda *args, **kwargs: self.tree.root.run(*args, **kwargs)
+        self.entry = lambda args=None, namespace=None: self.tree.root.run(args, namespace)
 
 env = ENV()

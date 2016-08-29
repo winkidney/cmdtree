@@ -6,10 +6,10 @@ CMD_META_NAME = "meta"
 
 
 def _get_cmd_path(path_prefix, cmd_name):
-    full_path = path_prefix
     if path_prefix is None:
-        full_path = []
-    full_path.append(cmd_name)
+        full_path = (cmd_name, )
+    else:
+        full_path = tuple(path_prefix) + (cmd_name, )
     return full_path
 
 
@@ -121,7 +121,11 @@ class CmdMeta(object):
     )
 
     def __init__(self, name=None, full_path=None, parser=None):
-        self.full_path = full_path or []
+        """
+        :param full_path: should always be tuple to avoid
+        unexpected changes from outside.
+        """
+        self.full_path = tuple(full_path) if full_path else tuple()
         self.name = name
         self.parser = parser
 
@@ -189,7 +193,11 @@ class Group(object):
 class Cmd(object):
     def __init__(self, func, name, parser, help=None, full_path=None):
         self.func = func
-        self.meta = CmdMeta(name=name, full_path=full_path, parser=parser)
+        self.meta = CmdMeta(
+            name=name,
+            full_path=full_path,
+            parser=parser,
+        )
         self.help = help
 
     def __call__(self, *args, **kwargs):
