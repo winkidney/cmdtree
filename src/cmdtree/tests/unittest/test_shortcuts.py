@@ -225,3 +225,7 @@ class TestCmd:
 
     def test_should_full_path_be_none_if_path_is_none(self, cmd):
         assert cmd.meta.full_path == ("do_nothing", )
+
+
+def test_get_func_name(do_nothing):
+    assert shortcuts._get_func_name(do_nothing) == "func"

@@ -215,7 +215,7 @@ def _get_tree():
 
 def _get_func_name(func):
     assert callable(func)
-    return func.func_name
+    return func.__name__
 
 
 def group(name=None, help=None):
