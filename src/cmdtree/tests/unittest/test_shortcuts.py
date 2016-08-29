@@ -47,11 +47,16 @@ def cmd(mocked_parser, do_nothing):
     "path_prefix, cmd_name, expected",
     (
         (
+            ("parent", "child"),
+            "execute",
+            ("parent", "child", "execute")
+        ),
+        (
             ["parent", "child"],
             "execute",
-            ["parent", "child", "execute"]
+            ("parent", "child", "execute")
         ),
-        (None, "execute", ["execute"]),
+        (None, "execute", ("execute", )),
     )
 )
 def test_get_cmd_path(path_prefix, cmd_name, expected):
@@ -165,9 +170,9 @@ class TestMkCmd:
             assert apply2parser.called
 
 
-def test_cmd_meta_should_handle_none_value_of_path():
+def test_cmd_meta_should_handle_none_value_of_path_to_tuple():
     cmd_meta = shortcuts.CmdMeta()
-    assert cmd_meta.full_path == []
+    assert cmd_meta.full_path == tuple()
 
 
 class TestParserProxy:
@@ -189,7 +194,7 @@ class TestGroup:
         assert group() == "do_nothing"
 
     def test_should_full_path_be_none_if_path_is_none(self, group):
-        assert group.meta.full_path == ["do_nothing"]
+        assert group.meta.full_path == ("do_nothing", )
 
     def test_should_command_call_mk_command(self, group):
         with mock.patch.object(
@@ -199,7 +204,7 @@ class TestGroup:
             mocked_mk.assert_called_with(
                 "name",
                 help=None,
-                path_prefix=["do_nothing", ]
+                path_prefix=("do_nothing", )
             )
 
     def test_should_group_call_mk_group(self, group):
@@ -210,7 +215,7 @@ class TestGroup:
             mocked_mk.assert_called_with(
                 "name",
                 help=None,
-                path_prefix=["do_nothing", ]
+                path_prefix=("do_nothing", )
             )
 
 
@@ -219,4 +224,4 @@ class TestCmd:
         assert cmd() == "do_nothing"
 
     def test_should_full_path_be_none_if_path_is_none(self, cmd):
-        assert cmd.meta.full_path == ["do_nothing"]
+        assert cmd.meta.full_path == ("do_nothing", )
