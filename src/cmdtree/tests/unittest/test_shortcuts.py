@@ -25,7 +25,22 @@ def parser_proxy():
 
 @pytest.fixture()
 def group(mocked_parser, do_nothing):
-    return shortcuts.Group(do_nothing, "do_nothing", mocked_parser, full_path=["do_nothing", ])
+    return shortcuts.Group(
+        do_nothing,
+        "do_nothing",
+        mocked_parser,
+        full_path=["do_nothing", ]
+    )
+
+
+@pytest.fixture()
+def cmd(mocked_parser, do_nothing):
+    return shortcuts.Cmd(
+        do_nothing,
+        "do_nothing",
+        mocked_parser,
+        full_path=["do_nothing", ]
+    )
 
 
 @pytest.mark.parametrize(
@@ -197,3 +212,11 @@ class TestGroup:
                 help=None,
                 path_prefix=["do_nothing", ]
             )
+
+
+class TestCmd:
+    def test_should_cmd_instance_call_func(self, cmd):
+        assert cmd() == "do_nothing"
+
+    def test_should_full_path_be_none_if_path_is_none(self, cmd):
+        assert cmd.meta.full_path == ["do_nothing"]
