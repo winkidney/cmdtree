@@ -18,6 +18,11 @@ def mocked_parser():
     return mock.Mock()
 
 
+@pytest.fixture()
+def parser_proxy():
+    return shortcuts.ParserProxy()
+
+
 @pytest.mark.parametrize(
     "path_prefix, cmd_name, expected",
     (
@@ -100,6 +105,25 @@ class TestMkGroup:
             cmd_proxy = shortcuts.CmdProxy(do_nothing)
             shortcuts._mk_group("name")(cmd_proxy)
             assert apply2parser.called
+
+
+def test_cmd_meta_should_handle_none_value_of_path():
+    cmd_meta = shortcuts.CmdMeta()
+    assert cmd_meta.full_path == []
+
+
+class TestParserProxy:
+    def test_should_option_add_options(self, parser_proxy):
+        parser_proxy.option("name", help="help")
+        assert parser_proxy.options == [(
+            ("name", ), {"help": "help"}
+        )]
+
+    def test_should_argument_add_options(self, parser_proxy):
+        parser_proxy.argument("name", help="help")
+        assert parser_proxy.arguments == [(
+            ("name", ), {"help": "help"}
+        )]
 
 
 class TestMkCmd:
