@@ -19,7 +19,8 @@ or just use shortcut decorators like `click`.
 + no extra dependencies(only `six` is needed)
 + Python3 support
 + argument-type support 
-+ decorators has no side-effect on function call
++ decorators has no side-effect on function call(call it in any other
+place in python style)
 
 ## Install 
 run `pip install cmdtree` or clone the repo and use it.
@@ -136,29 +137,29 @@ But when you should choose `cmdtree`?
 
 When you need:
 + fully sub-command support(not `group` in `click`)
-+ Higher-level api support(compare to `argparse`)
-+ More arg-type support(compare to `argparse`)
-+ decorators has no side-effect on function call
++ Higher-level api support(compared to `argparse`)
++ More arg-type support(compared to `argparse`)
++ decorators has no side-effect on function call(compared to `click`)
 
-You have to make implementation yourself.
+In both of them, you have to make implementation yourself.
 CmdTree works on this point.
 
-In most case , you can make your commanf `flat`. 
+In most case , you can make your command `flat`. 
 But when you need sub-command? 
 
 I use it in my `schema-sugar` project,
 the project generate cli-tool from schema that describes REST-API.
 
 For example:
-You want to generate a `CRUD` commandline for url 
+You want to generate a `CRUD` commandline for http resources,
 
 ```bash
 # list the resource 
-GET http://computer/disks
+GET http://example.com/computer/disks
 # show one of the disk info
-GET http://computer/disks/1
+GET http://example.com/computer/disks/1
 # delete
-DELETE http://computer/disks/1
+DELETE http://example.com/computer/disks/1
 ```
 
 I want to make a command line just like
@@ -168,7 +169,7 @@ rest-cli computer disks delete <id>
 rest-cli computer disks show <id>
 ```
 The `computer` is to used to make the resource `unique`, so I can not
-ensure I can make all of the command become `flat`.
+ensure that all of the commands could be made `flat`.
 
 `click` lacks the support for multiple-level sub-command.
 
@@ -218,5 +219,7 @@ tree.root.run()
 ## About
 
 Author: [winkidney@github](https://github.com/winkidney/)
+
 Repo: [GithubRepo](https://github.com/winkidney/cmdtree)
+
 Blog: [Blog](http://blog.winkidney.com)
