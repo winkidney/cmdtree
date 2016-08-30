@@ -6,8 +6,11 @@ python:
 # command to install dependencies
 before_install:
   - pip install -r src/test-requirements.txt
+  - pip install python-coveralls
 install:
   - cd src
   - python setup.py install
 # command to run tests
 script: py.test cmdtree --cov=cmdtree
+after_success:
+  - coveralls
