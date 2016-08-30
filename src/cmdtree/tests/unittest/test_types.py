@@ -1,7 +1,5 @@
 # coding: utf-8
-
-from argparse import ArgumentTypeError, FileType
-from contextlib import nested
+from argparse import ArgumentTypeError
 
 import mock
 import pytest
@@ -62,17 +60,17 @@ def test_should_string_param_return_always_unicode_if_is_string(
         argv_encode = "utf-8"
     if fs_encode is None:
         fs_encode = "utf-8"
-    with nested(
-            mock.patch.object(
-                types, "_get_argv_encoding"
-            ),
-            mock.patch.object(
-                types, "_get_argv_encoding"
-            ),
-    ) as (mocked_argv, mocked_fs):
-        mocked_argv.return_value = argv_encode
-        mocked_fs.return_value = fs_encode
-        assert types.StringParamType().convert(value) == expected
+    mocked_argv = mock.Mock()
+    mocked_fs = mock.Mock()
+    mocked_argv.return_value = argv_encode
+    mocked_fs.return_value = fs_encode
+    pathcer1 = mock.patch.object(types, "_get_argv_encoding", mocked_argv)
+    pathcer2 = mock.patch.object(types, "get_filesystem_encoding", mocked_fs)
+    pathcer1.start()
+    pathcer2.start()
+    assert types.StringParamType().convert(value) == expected
+    pathcer1.stop()
+    pathcer2.stop()
 
 
 class TestIntParamType:
