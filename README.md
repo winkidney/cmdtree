@@ -1,6 +1,8 @@
 CMDTree(WIP)
 ------------
-[![Build Status](https://travis-ci.org/winkidney/cmdtree.svg?branch=master)](https://travis-ci.org/winkidney/cmdtree) [![Coverage Status](https://coveralls.io/repos/github/winkidney/cmdtree/badge.svg?branch=master)](https://coveralls.io/github/winkidney/cmdtree?branch=master)
+[![PyPI version](https://badge.fury.io/py/cmdtree.svg)](https://badge.fury.io/py/cmdtree)
+[![Build Status](https://travis-ci.org/winkidney/cmdtree.svg?branch=master)](https://travis-ci.org/winkidney/cmdtree) 
+[![Coverage Status](https://coveralls.io/repos/github/winkidney/cmdtree/badge.svg?branch=master)](https://coveralls.io/github/winkidney/cmdtree?branch=master)
 
 
 Yet another cli library , click-like but sub-command friendly
