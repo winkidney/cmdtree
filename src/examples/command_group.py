@@ -7,6 +7,7 @@ def docker():
     pass
 
 
+# nested command
 @docker.command("run")
 @argument("container-name")
 def run(ip, container_name):
@@ -18,6 +19,7 @@ def run(ip, container_name):
     )
 
 
+# nested command group
 @docker.group("image")
 def image():
     pass

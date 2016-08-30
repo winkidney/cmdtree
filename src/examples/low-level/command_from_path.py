@@ -1,28 +1,32 @@
-from cmdtree.parser import AParser
 from cmdtree.tree import CmdTree
 
-tree = CmdTree(AParser())
+tree = CmdTree()
 
 
-def func1():
-    print("Hi, this is cmd1")
+def index():
+    print("Hi, you have 10 disks in your computer...")
 
 
-def func2(name):
-    print("Hi {0}, this is cmd2".format(name))
+def show(disk_id):
+    print("This is disk %s" % disk_id)
 
 
-def func3(name):
-    print("Hi {name}, this is cmd3")
+def delete(disk_id):
+    print("disk %s deleted" % disk_id)
 
 
-parser1 = tree.add_commands(["root", "cmd1"], func1)
-tree.add_commands(["root", "cmd2"], func2)
+# Add list command
+tree.add_commands(["computer", "list"], index)
 
-parser2 = tree.get_cmd_by_path(["root", "cmd2"])['cmd']
-parser2.argument("name", help="your name here")
+# get the parser in any place, any time
+tree.add_commands(["computer", "show"], show)
+tree_node = tree.get_cmd_by_path(["computer", "show"])
+show_parser = tree_node['cmd']
+show_parser.argument("disk_id")
 
-parser3 = tree.add_commands(["root", "child", "cmd3"], func3)
-parser3.argument("name", help="your name here")
+# Add delete command
+delete3 = tree.add_commands(["computer", "delete"], delete)
+delete3.argument("disk_id")
 
+# run your tree
 tree.root.run()
