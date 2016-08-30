@@ -18,7 +18,7 @@ setup(
     license='MIT',
     author='winkidney',
     author_email='winkidney@gmail.com',
-    description='Yet another cli library , more friendly, '
-                'sub-command friendly and '
-                'designed for cli auto-generating from one dict.',
+    description='Yet another cli tool library ,'
+                'sub-command friendly, '
+                'designed for cli auto-generating.',
 )
