@@ -163,7 +163,7 @@ class File(ParamTypeFactory):
         self.factory = FileType(mode=mode, bufsize=bufsize)
 
     def convert(self, value):
-        return self.factory
+        return self.factory(value)
 
 
 class Choices(UnprocessedParamType):
@@ -181,7 +181,7 @@ class Choices(UnprocessedParamType):
 
     def __call__(self):
         """
-        Return keyword aguments
+        Return keyword arguments
         :rtype: dict
         """
         return {
