@@ -6,3 +6,9 @@ mk-dist:
 
 clean:
 	rm -fr ./dist ./build ./cmdtree.egg-info ./.cache
+
+test:
+	py.test --cov=cmdtree --cov-report=term-missing cmdtree
+
+develop:
+	python setup.py develop
