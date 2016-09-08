@@ -11,7 +11,7 @@ install_requires = (
 
 setup(
     name='cmdtree',
-    version='0.0.2',
+    version='0.0.3',
     packages=find_packages(HERE, include=['cmdtree']),
     install_requires=install_requires,
     url='https://github.com/winkidney/cmdtree',
