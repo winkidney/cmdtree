@@ -1,4 +1,3 @@
-from cmdtree.tree import CmdTree
 from cmdtree.registry import env
 
 
@@ -66,7 +65,7 @@ def _mk_group(name, help=None, path_prefix=None):
 
         full_path = _get_cmd_path(path_prefix, _name)
 
-        tree = _get_tree()
+        tree = env.tree
         parser = tree.add_parent_commands(full_path)['cmd']
         _group = Group(
             _func,
@@ -98,7 +97,7 @@ def _mk_cmd(name, help=None, path_prefix=None):
             _name = _get_func_name(_func)
 
         full_path = _get_cmd_path(path_prefix, _name)
-        tree = _get_tree()
+        tree = env.tree
         parser = tree.add_commands(full_path, _func)
         _cmd = Cmd(
             _func,
@@ -202,15 +201,6 @@ class Cmd(object):
 
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
-
-
-def _get_tree():
-    """
-    :rtype: cmdtree.tree.CmdTree
-    """
-    if env.tree is None:
-        env.tree = CmdTree()
-    return env.tree
 
 
 def _get_func_name(func):
