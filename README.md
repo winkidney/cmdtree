@@ -211,6 +211,8 @@ delete3.argument("disk_id")
 tree.root.run()
 ```
 
+## Change Log
++ 2016.09.08 Global argument support
 
 ## Inspired by
 + `click`
