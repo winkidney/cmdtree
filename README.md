@@ -212,7 +212,9 @@ tree.root.run()
 ```
 
 ## Change Log
++ 2016.09.22 Fix help-message missing in command and group
 + 2016.09.08 Global argument support
+
 
 ## Inspired by
 + `click`
