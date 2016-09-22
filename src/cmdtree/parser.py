@@ -33,7 +33,7 @@ class AParser(ArgumentParser):
         self.subparsers = None
         super(AParser, self).__init__(*args, **kwargs)
 
-    def add_cmd(self, name, help="", func=None):
+    def add_cmd(self, name, help=None, func=None):
         """
         If func is None, this is regarded as a sub-parser which can contains
         sub-command.

@@ -66,7 +66,7 @@ def _mk_group(name, help=None, path_prefix=None):
         full_path = _get_cmd_path(path_prefix, _name)
 
         tree = env.tree
-        parser = tree.add_parent_commands(full_path)['cmd']
+        parser = tree.add_parent_commands(full_path, help=help)['cmd']
         _group = Group(
             _func,
             _name,
@@ -98,7 +98,7 @@ def _mk_cmd(name, help=None, path_prefix=None):
 
         full_path = _get_cmd_path(path_prefix, _name)
         tree = env.tree
-        parser = tree.add_commands(full_path, _func)
+        parser = tree.add_commands(full_path, _func, help=help)
         _cmd = Cmd(
             _func,
             _name,

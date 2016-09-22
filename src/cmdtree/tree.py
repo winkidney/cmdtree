@@ -69,15 +69,15 @@ class CmdTree(object):
             new_path, existed_path = full_path[end_index:], full_path[:end_index]
         return new_path, existed_path
 
-    def add_commands(self, cmd_path, func):
+    def add_commands(self, cmd_path, func, help=None):
         cmd_name = cmd_path[-1]
         parent = self.add_parent_commands(cmd_path[:-1])
-        sub_command = parent['cmd'].add_cmd(name=cmd_name, func=func)
+        sub_command = parent['cmd'].add_cmd(name=cmd_name, func=func, help=help)
         node = _mk_cmd_node(cmd_name, sub_command)
         self._add_node(node, cmd_path=cmd_path)
         return sub_command
 
-    def add_parent_commands(self, cmd_path):
+    def add_parent_commands(self, cmd_path, help=None):
         """
         Create parent command object in cmd tree then return
         the last parent command object.
@@ -89,15 +89,22 @@ class CmdTree(object):
             existed_cmd_end_index,
         )
         parent_node = self.get_cmd_by_path(existed_path)
+
+        last_one_index = 1
+        new_path_len = len(new_path)
+        _kwargs = {}
         for cmd_name in new_path:
+            if last_one_index >= new_path_len:
+                _kwargs['help'] = help
             sub_cmd = parent_node['cmd'].add_cmd(
-                cmd_name, cmd_name
+                cmd_name, **_kwargs
             )
             parent_node = _mk_cmd_node(cmd_name, sub_cmd)
             self._add_node(
                 parent_node,
                 existed_path + new_path[:new_path.index(cmd_name)]
             )
+            last_one_index += 1
         return parent_node
 
     def index_in_tree(self, cmd_path):
