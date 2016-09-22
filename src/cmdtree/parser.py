@@ -42,6 +42,7 @@ class AParser(ArgumentParser):
         """
         if self.subparsers is None:
             self.subparsers = self.add_subparsers(
+                title="sub-commands",
                 help=help or 'sub-commands',
             )
 
