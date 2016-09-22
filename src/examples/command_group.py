@@ -1,14 +1,19 @@
 from cmdtree import group, argument, entry
 
 
-@group("docker")
-@argument("ip")
+@group("fake-docker", "fake-docker command binds")
+def fake_docker():
+    pass
+
+
+@group("docker", "docker command binds")
+@argument("ip", help="docker daemon ip addr")
 def docker():
     pass
 
 
 # nested command
-@docker.command("run")
+@docker.command("run", help="run docker command")
 @argument("container-name")
 def run(ip, container_name):
     print(
@@ -20,7 +25,7 @@ def run(ip, container_name):
 
 
 # nested command group
-@docker.group("image")
+@docker.group("image", help="image operation")
 def image():
     pass
 
