@@ -32,3 +32,18 @@ def test_should_reverse_decorator_order_has_no_side_effect():
         ["order", "host", "--port", "8888"]
     )
     assert result == ("host", 8888)
+
+
+def test_should_option_order_not_cause_argument_miss():
+
+    from cmdtree import entry
+
+    @command("test_miss")
+    @option("kline")
+    @argument("script_path", help="file path of python _script")
+    def run_test(script_path, kline):
+        return script_path, kline
+
+    assert entry(
+        ["test_miss", "path", "--kline", "fake"]
+    ) == ("path", "fake")
