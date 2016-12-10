@@ -38,15 +38,3 @@ def test_nested_group_works():
         ["docker", "0.0.0.0", "image", "create", "test_image"]
     ) == ("0.0.0.0", "test_image")
 
-
-def test_should_double_option_order_do_not_cause_calling_error():
-
-    @command("test_order")
-    @option("feed", type=Choices(("kline", "fake")), default="fake")
-    @option("config", help="config file path for kline database")
-    def hello(feed, config):
-        return feed
-
-    assert entry(
-        ["test_order", "--feed", "fake"]
-    ) == "fake"

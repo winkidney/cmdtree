@@ -1,5 +1,5 @@
 import pytest
-from cmdtree import INT
+from cmdtree import INT, entry
 from cmdtree import command, argument, option
 
 
@@ -47,3 +47,16 @@ def test_should_option_order_not_cause_argument_miss():
     assert entry(
         ["test_miss", "path", "--kline", "fake"]
     ) == ("path", "fake")
+
+
+def test_should_double_option_order_do_not_cause_calling_error():
+
+    @command("test_order")
+    @option("feed")
+    @option("config", help="config file path for kline database")
+    def hello(feed, config):
+        return feed
+
+    assert entry(
+        ["test_order", "--feed", "fake"]
+    ) == "fake"
