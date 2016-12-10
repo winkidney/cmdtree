@@ -238,7 +238,7 @@ def argument(name, help=None, type=None):
 def option(name, help=None, is_flag=False, default=None, type=None):
 
     def wrapper(func):
-        if isinstance(func, (Group, Cmd)):
+        if isinstance(func, (Group, Cmd, CmdProxy)):
             parser = func.meta.parser
             parser.option(
                 name,
