@@ -1,3 +1,6 @@
+import sys
+
+
 class ENV(object):
     __slots__ = (
         "silent_exit",
@@ -7,13 +10,18 @@ class ENV(object):
 
     def __init__(self):
         """
-        :type parser: cmdtree.parser.AParser
+        :type parser: cmdtree.parser.CommandNode
         """
         self.silent_exit = True
         self._tree = None
 
-    def entry(self, args=None, namespace=None):
-        return self.tree.root.run(args, namespace)
+    def entry(self, args=None):
+        from cmdtree.arg_parser import RawArgsParser
+
+        if args is None:
+            args = sys.argv[1:]
+        parser = RawArgsParser(args, self.tree)
+        parser.run()
 
     @property
     def tree(self):

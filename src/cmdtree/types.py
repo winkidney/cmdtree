@@ -1,4 +1,4 @@
-from argparse import ArgumentTypeError as ArgTypeError, FileType
+from argparse import FileType, ArgumentTypeError
 
 from six import text_type, PY2
 
@@ -27,7 +27,7 @@ class ParamTypeFactory(object):
 
     @staticmethod
     def fail(msg):
-        raise ArgTypeError(msg)
+        raise ArgumentTypeError(msg)
 
 
 class UnprocessedParamType(ParamTypeFactory):

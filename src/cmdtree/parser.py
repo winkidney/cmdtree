@@ -1,14 +1,42 @@
-from argparse import ArgumentParser
 import sys
 
 import six
 
-from cmdtree.exceptions import ArgumentParseError
+from cmdtree.echo import error
+from cmdtree.exceptions import (
+    ParserError, ArgumentRepeatedRegister,
+    ArgumentTypeError,
+    ArgumentError,
+    OptionError
+)
 from cmdtree.registry import env
+from cmdtree.templates import E_MISSING_ARGUMENT
+from cmdtree.types import ParamTypeFactory, STRING
 
 
 def _normalize_arg_name(arg_name):
+    name_list = list(arg_name)
+    new_name_list = []
+    prev = name_list[0]
+    for ele in name_list:
+        if prev == ele == "-":
+            continue
+        new_name_list.append(ele)
+    arg_name = "".join(new_name_list)
     return arg_name.replace("-", "_")
+
+
+def _assert_type_valid(name, type_):
+    if not isinstance(type_, ParamTypeFactory):
+        raise ArgumentTypeError(
+            (
+                "Invalid type of argument {}, "
+                "should be instance of {}"
+            ).format(
+                name,
+                ParamTypeFactory,
+            )
+        )
 
 
 def vars_(object=None):
@@ -25,80 +53,241 @@ def vars_(object=None):
     return filtered_vars
 
 
-class AParser(ArgumentParser):
+class ParserTypes(object):
+    LEAF = "leaf"
+    ROOT = "root"
+
+
+class Argument(object):
+    def __init__(self, name, type_, help=None):
+        self.name = name
+        self.type = type_
+        self.help = help
+
+    def get_value(self, value):
+        return self.type.convert(value)
+
+
+class Option(object):
+    def __init__(self, name, help=None, is_flag=False, default=None, type_=None):
+        self.name = name
+        self.default = default
+        if is_flag:
+            self.default = bool(default)
+        self.is_flag = is_flag
+        self.help = help
+        self.type = type_
+        # TODO: implement is_flag parse
+
+    def get_value(self, value):
+        return self.type.convert(value)
+
+
+class ArgumentMgr(object):
+
+    def __init__(self):
+        self.arg_names = []
+        self.arg_map = {}
+        self.parsed_values = {}
+
+    def assert_filled(self):
+        if self.num_args > len(self.parsed_values):
+            missed_args = [
+                name
+                for name in self.arg_names
+                if name not in self.parsed_values
+            ]
+            msg = E_MISSING_ARGUMENT.format(
+                args=" ".join(missed_args)
+            )
+            raise ArgumentError(
+                msg
+            )
+
+
+    def add(self, name, type_=None, help=None):
+        type_ = type_ or STRING
+        if name in self.arg_names:
+            raise ArgumentRepeatedRegister(
+                "Argument {} registered more than once.".format(
+                    name
+                )
+            )
+        _assert_type_valid(name, type_)
+        self.arg_names.append(name)
+        self.arg_map[name] = Argument(
+            name=name,
+            type_=type_,
+            help=help,
+        )
+
+    @property
+    def num_args(self):
+        return len(self.arg_names)
+
+    def add_value(self, index, value):
+        self.parsed_values[self.arg_names[index]] = value
+
+    @property
+    def kwargs(self):
+        kwargs = {}
+        for name, value in self.parsed_values.items():
+            argument = self.arg_map[name]
+            new_name = _normalize_arg_name(name)
+            kwargs[new_name] = argument.get_value(value)
+        return kwargs
+
+
+class OptionMgr(object):
+    def __init__(self):
+        self.opts_names = []
+        self.opts_map = {}
+        self.parsed_values = {}
+
+    def add(self, name, help=None, is_flag=False, default=None, type_=None):
+        type_ = type_ or STRING
+        if name in self.opts_names:
+            raise ArgumentRepeatedRegister(
+                "Argument {} registered more than once.".format(
+                    name
+                )
+            )
+        _assert_type_valid(name, type_)
+        self.opts_names.append(name)
+        self.opts_map[name] = Option(
+            name=name,
+            type_=type_,
+            help=help,
+            is_flag=is_flag,
+            default=default
+        )
+
+    def get_option_or_none(self, name):
+        """
+        :rtype: Option
+        """
+        return self.opts_map.get(name)
+
+    def add_value(self, name, value):
+        self.parsed_values[name] = value
+
+    @property
+    def kwargs(self):
+        kwargs = {}
+        for name, opt in self.opts_map.items():
+            new_name = _normalize_arg_name(name)
+            kwargs[new_name] = opt.default
+
+        for name, value in self.parsed_values.items():
+            argument = self.opts_map[name]
+            new_name = _normalize_arg_name(name)
+            kwargs[new_name] = argument.get_value(value)
+        return kwargs
+
+
+class CommandNode(object):
     """
     Arg-parse wrapper for sub command and convenient arg parse.
     """
-    def __init__(self, *args, **kwargs):
-        self.subparsers = None
-        super(AParser, self).__init__(*args, **kwargs)
+    def __init__(self, name, help=None, func=None):
+        self.name = name
+        self.help = help
+        self.arg_mgr = ArgumentMgr()
+        self.opt_mgr = OptionMgr()
+        self.func = func
 
-    def add_cmd(self, name, help=None, func=None):
-        """
-        If func is None, this is regarded as a sub-parser which can contains
-        sub-command.
-        Else, this is a leaf node in cmd tree which can not add sub-command.
-        :rtype: AParser
-        """
-        if self.subparsers is None:
-            self.subparsers = self.add_subparsers(
-                title="sub-commands",
-                help=help or 'sub-commands',
-            )
+    @property
+    def kwargs(self):
+        kwargs = {}
+        kwargs.update(self.arg_mgr.kwargs)
+        kwargs.update(self.opt_mgr.kwargs)
+        return kwargs
 
-        parser = self.subparsers.add_parser(
-            name,
-            help=help,
-        )
-        if func is not None:
-            parser.set_defaults(_func=func)
-        return parser
+    @classmethod
+    def _is_option(cls, arg_str):
+        return arg_str.startswith("-")
 
-    def run(self, args=None, namespace=None):
-        args = self.parse_args(args, namespace)
-        _func = getattr(args, "_func", None)
-
-        if _func:
-            return args._func(**vars_(args))
-        else:
-            raise ValueError(
-                "No function binding for args `{args}`".format(
-                    args=args
+    def parse_args(self, possible_args):
+        count = 0
+        index = -1
+        args_len = len(possible_args)
+        while True:
+            index += 1
+            if index >= args_len:
+                break
+            current_arg = possible_args[index]
+            if self._is_option(current_arg):
+                option = self.opt_mgr.get_option_or_none(
+                    current_arg
                 )
+                if option is None:
+                    raise OptionError(
+                        "No such option '%s'" % current_arg
+                    )
+                if option.is_flag:
+                    self.opt_mgr.add_value(
+                        name=option.name,
+                        value=not option.default,
+                    )
+                    continue
+                try:
+                    self.opt_mgr.add_value(
+                        name=option.name,
+                        value=possible_args[index + 1],
+                    )
+                except IndexError:
+                    raise ArgumentError(
+                        "No value for argument %s" % option.name
+                    )
+                index += 1
+                continue
+            count += 1
+            if count > self.arg_mgr.num_args:
+                break
+            self.arg_mgr.add_value(
+                count - 1,
+                value=current_arg
             )
+        self.arg_mgr.assert_filled()
+        left_args = possible_args[index + 1:]
+        eaten_length = args_len - len(left_args)
+        return eaten_length, left_args
+
+    def callable(self):
+        return self.func is not None
+
+    def run(self, kwargs):
+        if self.callable():
+            return self.func(**kwargs)
 
     def exit(self, status=0, message=None):
         if message:
-            self._print_message(message, sys.stderr)
+            error(message)
         if env.silent_exit:
             sys.exit(status)
         else:
-            raise ArgumentParseError(message)
+            raise ParserError(message)
 
     def argument(self, name, help=None, type=None):
-        kwargs = {"help": help}
         if name.startswith("-"):
             raise ValueError(
                 "positional argument [{0}] can not contains `-` in".format(name)
             )
 
-        if type is not None:
-            kwargs.update(
-                type()
-            )
-        return self.add_argument(
-            name, **kwargs
+        return self.arg_mgr.add(
+            name=name,
+            help=help,
+            type_=type,
         )
 
     def option(self, name, help=None, is_flag=False, default=None, type=None):
         _name = name
         if not name.startswith("-"):
             _name = "--" + name
-        kwargs = dict(help=help)
-        if is_flag:
-            kwargs['action'] = "store_true"
-        if default is not None:
-            kwargs['default'] = default
-        if type is not None:
-            kwargs.update(type())
-        return self.add_argument(_name, **kwargs)
+        return self.opt_mgr.add(
+            _name,
+            help=help,
+            is_flag=is_flag,
+            default=default,
+            type_=type,
+        )

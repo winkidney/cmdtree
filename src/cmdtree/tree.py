@@ -1,4 +1,7 @@
-from cmdtree.parser import AParser
+from cmdtree import echo
+from cmdtree.echo import format_list
+from cmdtree.exceptions import NodeDoesExist
+from cmdtree.parser import CommandNode
 
 
 def _mk_cmd_node(cmd_name, cmd_obj):
@@ -9,6 +12,24 @@ def _mk_cmd_node(cmd_name, cmd_obj):
     }
 
 
+_NO_CMD_GIVEN_TPL = """
+No command given, please select from commands below:
+{
+    %s
+}
+"""
+
+
+def get_help(node):
+    if not node['cmd'].callable():
+        sub_cmds = [
+            node['name'] for node in node['children'].values()
+        ]
+        return echo.error(
+            _NO_CMD_GIVEN_TPL % format_list(sub_cmds)
+        )
+
+
 class CmdTree(object):
     """
     A tree that manages the command references by cmd path like
@@ -17,12 +38,12 @@ class CmdTree(object):
 
     def __init__(self, root_parser=None):
         """
-        :type root_parser: cmdtree.parser.AParser
+        :type root_parser: cmdtree.parser.CommandNode
         """
         if root_parser is not None:
             self.root = root_parser
         else:
-            self.root = AParser()
+            self.root = CommandNode("root")
         self.tree = {
             "name": "root",
             "cmd": self.root,
@@ -30,6 +51,13 @@ class CmdTree(object):
         }
 
     def get_cmd_by_path(self, existed_cmd_path):
+        """
+        :rtype: CommandNode
+        """
+        node = self.get_node_by_path(existed_cmd_path)
+        return node['cmd']
+
+    def get_node_by_path(self, existed_cmd_path):
         """
         :return:
         {
@@ -39,11 +67,13 @@ class CmdTree(object):
         }
         """
         parent = self.tree
+        if len(existed_cmd_path) == 0:
+            return self.tree
         for cmd_name in existed_cmd_path:
             try:
                 parent = parent['children'][cmd_name]
             except KeyError:
-                raise ValueError(
+                raise NodeDoesExist(
                     "Given key [%s] in path %s does not exist in tree."
                     % (cmd_name, existed_cmd_path)
                 )
@@ -71,8 +101,7 @@ class CmdTree(object):
 
     def add_commands(self, cmd_path, func, help=None):
         cmd_name = cmd_path[-1]
-        parent = self.add_parent_commands(cmd_path[:-1])
-        sub_command = parent['cmd'].add_cmd(name=cmd_name, func=func, help=help)
+        sub_command = CommandNode(name=cmd_name, func=func, help=help)
         node = _mk_cmd_node(cmd_name, sub_command)
         self._add_node(node, cmd_path=cmd_path)
         return sub_command
@@ -88,7 +117,7 @@ class CmdTree(object):
             cmd_path,
             existed_cmd_end_index,
         )
-        parent_node = self.get_cmd_by_path(existed_path)
+        parent_node = self.get_node_by_path(existed_path)
 
         last_one_index = 1
         new_path_len = len(new_path)
@@ -96,7 +125,7 @@ class CmdTree(object):
         for cmd_name in new_path:
             if last_one_index >= new_path_len:
                 _kwargs['help'] = help
-            sub_cmd = parent_node['cmd'].add_cmd(
+            sub_cmd = CommandNode(
                 cmd_name, **_kwargs
             )
             parent_node = _mk_cmd_node(cmd_name, sub_cmd)

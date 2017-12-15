@@ -3,7 +3,7 @@ import pytest
 import six
 
 from cmdtree import parser
-from cmdtree.exceptions import ArgumentParseError
+from cmdtree.exceptions import ParserError
 
 
 def mk_obj(property_dict):
@@ -17,8 +17,8 @@ def mk_obj(property_dict):
 
 @pytest.fixture()
 def aparser():
-    from cmdtree.parser import AParser
-    return AParser()
+    from cmdtree.parser import CommandNode
+    return CommandNode()
 
 
 @pytest.fixture()
@@ -84,7 +84,7 @@ class TestAParser:
     @pytest.mark.parametrize(
         "silent_exit, exception",
         (
-                (False, ArgumentParseError),
+                (False, ParserError),
                 (True, SystemExit)
         )
     )

@@ -75,7 +75,7 @@ class TestCmdTree:
             self, cmd_tree_with_tree, cmd_node, cmd_node2
     ):
         tree = cmd_tree_with_tree
-        ret = tree.get_cmd_by_path(['new_cmd'])
+        ret = tree.get_node_by_path(['new_cmd'])
         expected_cmd_node = deepcopy(cmd_node)
         expected_cmd_node['children']['child_cmd'] = cmd_node2
         assert ret == expected_cmd_node
@@ -84,7 +84,7 @@ class TestCmdTree:
             self, cmd_tree_with_tree, cmd_node2
     ):
         tree = cmd_tree_with_tree
-        ret = tree.get_cmd_by_path(['new_cmd', 'child_cmd'])
+        ret = tree.get_node_by_path(['new_cmd', 'child_cmd'])
         assert ret == cmd_node2
 
     @pytest.mark.parametrize(
@@ -130,11 +130,11 @@ class TestCmdTree:
     def test_should_cmd_tree_get_cmd_by_path_got_obj(
             self, cmd_tree_with_tree
     ):
-        assert cmd_tree_with_tree.get_cmd_by_path(['new_cmd']) is not None
-        assert cmd_tree_with_tree.get_cmd_by_path(
+        assert cmd_tree_with_tree.get_node_by_path(['new_cmd']) is not None
+        assert cmd_tree_with_tree.get_node_by_path(
             ['new_cmd', "child_cmd"]) is not None
         with pytest.raises(ValueError) as excinfo:
-            cmd_tree_with_tree.get_cmd_by_path(['new_cmd', "fuck"])
+            cmd_tree_with_tree.get_node_by_path(['new_cmd', "fuck"])
         msg = "Given key [fuck] in path ['new_cmd', 'fuck'] does not exist in tree."
         assert str(excinfo.value) == msg
 

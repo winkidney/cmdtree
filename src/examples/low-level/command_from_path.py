@@ -20,7 +20,7 @@ tree.add_commands(["computer", "list"], index)
 
 # get the parser in any place, any time
 tree.add_commands(["computer", "show"], show)
-tree_node = tree.get_cmd_by_path(["computer", "show"])
+tree_node = tree.get_node_by_path(["computer", "show"])
 show_parser = tree_node['cmd']
 show_parser.argument("disk_id")
 
