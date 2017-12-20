@@ -57,6 +57,6 @@ class RawArgsParser(object):
         node = self.cmd_nodes[-1]
         cmd = node['cmd']
         if cmd.callable():
-            cmd.run(kwargs)
+            return cmd.run(kwargs)
         get_help(node)
 
