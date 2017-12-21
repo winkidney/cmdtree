@@ -21,7 +21,7 @@ class ENV(object):
         if args is None:
             args = sys.argv[1:]
         parser = RawArgsParser(args, self.tree)
-        parser.run()
+        return parser.run()
 
     @property
     def tree(self):
