@@ -1,9 +1,8 @@
 import mock
 import pytest
 
-from cmdtree import shortcuts
-import cmdtree.proxy
-import cmdtree.utils
+from cmdtree import utils
+from cmdtree import proxy
 
 
 @pytest.fixture()
@@ -22,12 +21,12 @@ def mocked_parser():
 
 @pytest.fixture()
 def parser_proxy():
-    return cmdtree.proxy.ParserProxy()
+    return proxy.ParserProxy()
 
 
 @pytest.fixture()
 def group(mocked_parser, do_nothing):
-    return cmdtree.proxy.Group(
+    return proxy.Group(
         do_nothing,
         "do_nothing",
         mocked_parser,
@@ -37,7 +36,7 @@ def group(mocked_parser, do_nothing):
 
 @pytest.fixture()
 def cmd(mocked_parser, do_nothing):
-    return cmdtree.proxy.Cmd(
+    return proxy.Cmd(
         do_nothing,
         "do_nothing",
         mocked_parser,
@@ -45,32 +44,10 @@ def cmd(mocked_parser, do_nothing):
     )
 
 
-@pytest.mark.parametrize(
-    "path_prefix, cmd_name, expected",
-    (
-        (
-            ("parent", "child"),
-            "execute",
-            ("parent", "child", "execute")
-        ),
-        (
-            ["parent", "child"],
-            "execute",
-            ("parent", "child", "execute")
-        ),
-        (None, "execute", ("execute", )),
-    )
-)
-def test_get_cmd_path(path_prefix, cmd_name, expected):
-    assert cmdtree.utils._get_cmd_path(
-        path_prefix, cmd_name
-    ) == expected
-
-
 def test_should_apply2user_called_correctly(mocked_parser):
     option = mocked_parser.option = mock.Mock()
     argument = mocked_parser.argument = mock.Mock()
-    cmdtree.proxy._apply2parser(
+    proxy._apply2parser(
         [["cmd1", {}], ],
         [["cmd1", {}], ["cmd1", {}], ],
         mocked_parser
@@ -82,7 +59,7 @@ def test_should_apply2user_called_correctly(mocked_parser):
 @pytest.mark.parametrize(
     "cmd_proxy, expected",
     (
-        (cmdtree.proxy.CmdProxy(lambda x: x), True),
+        (proxy.CmdProxy(lambda x: x), True),
         (lambda x: x, False),
     )
 )
@@ -90,9 +67,9 @@ def test_should_apply2parser_be_called_with_cmd_proxy(
         cmd_proxy, expected, mocked_parser,
 ):
     with mock.patch.object(
-            shortcuts, "_apply2parser"
+            proxy, "_apply2parser"
     ) as mocked_apply:
-        cmdtree.proxy.apply2parser(cmd_proxy, mocked_parser)
+        proxy.apply2parser(cmd_proxy, mocked_parser)
         assert mocked_apply.called is expected
 
 
@@ -100,26 +77,26 @@ class TestMkGroup:
     def test_should_return_group_with_group(self, do_nothing):
 
         assert isinstance(
-            cmdtree.proxy._mk_group("hello")(do_nothing),
-            cmdtree.proxy.Group
+            proxy._mk_group("hello")(do_nothing),
+            proxy.Group
         )
 
     def test_should_raise_value_error_if_group_inited(
             self, do_nothing, mocked_parser
     ):
 
-        group = cmdtree.proxy.Group(do_nothing, "test", mocked_parser)
+        group = proxy.Group(do_nothing, "test", mocked_parser)
 
         with pytest.raises(ValueError):
-            cmdtree.proxy._mk_group("test")(group)
+            proxy._mk_group("test")(group)
 
     def test_should_get_func_name_called_if_no_name_given(
             self, do_nothing
     ):
         with mock.patch.object(
-                shortcuts, "_get_func_name"
+                proxy, "get_func_name"
         ) as mocked_get_name:
-            cmdtree.proxy._mk_group(None)(do_nothing)
+            proxy._mk_group(None)(do_nothing)
             assert mocked_get_name.called
 
     def test_should_call_apply2parser_for_meta_cmd(
@@ -127,10 +104,10 @@ class TestMkGroup:
     ):
 
         with mock.patch.object(
-                shortcuts, "apply2parser",
+                proxy, "apply2parser",
         ) as apply2parser:
-            cmd_proxy = cmdtree.proxy.CmdProxy(do_nothing)
-            cmdtree.proxy._mk_group("name")(cmd_proxy)
+            cmd_proxy = proxy.CmdProxy(do_nothing)
+            proxy._mk_group("name")(cmd_proxy)
             assert apply2parser.called
 
 
@@ -138,26 +115,26 @@ class TestMkCmd:
     def test_should_return_cmd_with_cmd(self, do_nothing):
 
         assert isinstance(
-            cmdtree.proxy._mk_cmd("hello")(do_nothing),
-            cmdtree.proxy.Cmd
+            proxy._mk_cmd("hello")(do_nothing),
+            proxy.Cmd
         )
 
     def test_should_raise_value_error_if_cmd_inited(
             self, do_nothing, mocked_parser
     ):
 
-        cmd = cmdtree.proxy.Cmd(do_nothing, "test", mocked_parser)
+        cmd = proxy.Cmd(do_nothing, "test", mocked_parser)
 
         with pytest.raises(ValueError):
-            cmdtree.proxy._mk_cmd("test")(cmd)
+            proxy._mk_cmd("test")(cmd)
 
     def test_should_get_func_name_called_if_no_name_given(
             self, do_nothing
     ):
         with mock.patch.object(
-                shortcuts, "_get_func_name"
+                proxy, "get_func_name"
         ) as mocked_get_name:
-            cmdtree.proxy._mk_cmd(None)(do_nothing)
+            proxy._mk_cmd(None)(do_nothing)
             assert mocked_get_name.called
 
     def test_should_call_apply2parser_for_meta_cmd(
@@ -165,15 +142,15 @@ class TestMkCmd:
     ):
 
         with mock.patch.object(
-                shortcuts, "apply2parser",
+                proxy, "apply2parser",
         ) as apply2parser:
-            cmd_proxy = cmdtree.proxy.CmdProxy(do_nothing)
-            cmdtree.proxy._mk_cmd("name")(cmd_proxy)
+            cmd_proxy = proxy.CmdProxy(do_nothing)
+            proxy._mk_cmd("name")(cmd_proxy)
             assert apply2parser.called
 
 
 def test_cmd_meta_should_handle_none_value_of_path_to_tuple():
-    cmd_meta = cmdtree.proxy.CmdMeta()
+    cmd_meta = proxy.CmdMeta()
     assert cmd_meta.full_path == tuple()
 
 
@@ -200,7 +177,7 @@ class TestGroup:
 
     def test_should_command_call_mk_command(self, group):
         with mock.patch.object(
-                shortcuts, "_mk_cmd"
+                proxy, "_mk_cmd"
         ) as mocked_mk:
             group.command("name")
             mocked_mk.assert_called_with(
@@ -211,7 +188,7 @@ class TestGroup:
 
     def test_should_group_call_mk_group(self, group):
         with mock.patch.object(
-                shortcuts, "_mk_group"
+                proxy, "_mk_group"
         ) as mocked_mk:
             group.group("name")
             mocked_mk.assert_called_with(
@@ -230,4 +207,4 @@ class TestCmd:
 
 
 def test_get_func_name(do_nothing):
-    assert cmdtree.utils._get_func_name(do_nothing) == "func"
+    assert utils.get_func_name(do_nothing) == "func"

@@ -1,5 +1,5 @@
 from cmdtree import env
-from cmdtree.utils import _get_func_name, _get_cmd_path
+from cmdtree.utils import get_func_name, get_cmd_path
 
 
 CMD_META_NAME = "meta"
@@ -145,9 +145,9 @@ def _mk_group(name, help=None, path_prefix=None):
             _func = func.func
 
         if name is None:
-            _name = _get_func_name(_func)
+            _name = get_func_name(_func)
 
-        full_path = _get_cmd_path(path_prefix, _name)
+        full_path = get_cmd_path(path_prefix, _name)
 
         tree = env.tree
         parser = tree.add_parent_commands(full_path, help=help)['cmd']
@@ -178,9 +178,9 @@ def _mk_cmd(name, help=None, path_prefix=None):
 
         _name = name
         if name is None:
-            _name = _get_func_name(_func)
+            _name = get_func_name(_func)
 
-        full_path = _get_cmd_path(path_prefix, _name)
+        full_path = get_cmd_path(path_prefix, _name)
         tree = env.tree
         parser = tree.add_commands(full_path, _func, help=help)
         _cmd = Cmd(
