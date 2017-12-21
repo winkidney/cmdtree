@@ -11,6 +11,7 @@ install:
   - cd src
   - python setup.py install
 # command to run tests
-script: py.test cmdtree --cov=cmdtree
+script:
+  - make test
 after_success:
   - coveralls
