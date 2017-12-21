@@ -227,6 +227,7 @@ class CommandNode(object):
                 continue
             count += 1
             if count > self.arg_mgr.num_args:
+                index -= 1
                 break
             self.arg_mgr.add_value(
                 count - 1,
