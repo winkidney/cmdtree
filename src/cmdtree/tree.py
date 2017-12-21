@@ -1,4 +1,5 @@
 from cmdtree import echo
+from cmdtree.constants import ROOT_NODE_NAME
 from cmdtree.echo import format_list
 from cmdtree.exceptions import NodeDoesExist
 from cmdtree.parser import CommandNode
@@ -43,9 +44,9 @@ class CmdTree(object):
         if root_parser is not None:
             self.root = root_parser
         else:
-            self.root = CommandNode("root")
+            self.root = CommandNode(name=ROOT_NODE_NAME)
         self.tree = {
-            "name": "root",
+            "name": ROOT_NODE_NAME,
             "cmd": self.root,
             "children": {}
         }
