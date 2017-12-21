@@ -1,7 +1,7 @@
 import pytest
 import six
 
-from cmdtree import CommandNode
+from cmdtree.parser import CommandNode
 from cmdtree.constants import ROOT_NODE_NAME
 
 
