@@ -303,7 +303,7 @@ class RawArgsParser(object):
                 raise NoSuchCommand(
                     "Command %s does not exist."
                     % str(
-                        full_cmd_path[0]
+                        cmd_path2find[-1]
                         if full_cmd_path
                         else sys.argv[0]
                     )
