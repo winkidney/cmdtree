@@ -5,7 +5,6 @@ from setuptools import setup, find_packages
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 install_requires = (
-    "argparse",
     "six>=1.10.0",
 )
 
