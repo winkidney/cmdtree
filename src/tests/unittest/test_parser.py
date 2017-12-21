@@ -1,10 +1,8 @@
-import mock
 import pytest
 import six
 
-from cmdtree import parser, CommandNode
+from cmdtree import CommandNode
 from cmdtree.constants import ROOT_NODE_NAME
-from cmdtree.exceptions import ParserError
 
 
 def mk_obj(property_dict):

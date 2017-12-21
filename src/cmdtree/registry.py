@@ -16,7 +16,7 @@ class ENV(object):
         self._tree = None
 
     def entry(self, args=None):
-        from cmdtree.arg_parser import RawArgsParser
+        from cmdtree.parser import RawArgsParser
 
         if args is None:
             args = sys.argv[1:]

@@ -3,6 +3,7 @@ from cmdtree.constants import ROOT_NODE_NAME
 from cmdtree.echo import format_list
 from cmdtree.exceptions import NodeDoesExist
 from cmdtree.parser import CommandNode
+from cmdtree.templates import E_NO_CMD_GIVEN_TPL
 
 
 def _mk_cmd_node(cmd_name, cmd_obj):
@@ -11,24 +12,6 @@ def _mk_cmd_node(cmd_name, cmd_obj):
         "cmd": cmd_obj,
         "children": {}
     }
-
-
-_NO_CMD_GIVEN_TPL = """
-No command given, please select from commands below:
-{
-    %s
-}
-"""
-
-
-def get_help(node):
-    if not node['cmd'].callable():
-        sub_cmds = [
-            node['name'] for node in node['children'].values()
-        ]
-        return echo.error(
-            _NO_CMD_GIVEN_TPL % format_list(sub_cmds)
-        )
 
 
 class CmdTree(object):
@@ -150,3 +133,13 @@ class CmdTree(object):
             else:
                 return cmd_path.index(key)
         return None
+
+    @classmethod
+    def show_node_help(cls, node):
+        if not node['cmd'].callable():
+            sub_cmds = [
+                node['name'] for node in node['children'].values()
+            ]
+            return echo.error(
+                E_NO_CMD_GIVEN_TPL % format_list(sub_cmds)
+            )

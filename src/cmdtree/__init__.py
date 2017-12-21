@@ -1,4 +1,3 @@
-from cmdtree.parser import CommandNode
 from cmdtree.registry import env
 from cmdtree.shortcuts import (
     argument,
@@ -20,6 +19,5 @@ from cmdtree.types import (
 )
 
 # globals and entry point
-# env.parser = CommandNode()
 entry = env.entry
 
