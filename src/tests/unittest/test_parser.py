@@ -36,26 +36,14 @@ def test_func():
     (
         ("hello_world", "hello_world"),
         ("hello-world", "hello_world"),
+        ("--hello-world", "hello_world"),
+        ("---hello-world", "hello_world"),
+        ("-hello-world", "hello_world"),
     )
 )
 def test_normalize_arg_name(arg_name, expected):
     from cmdtree.parser import _normalize_arg_name
     assert _normalize_arg_name(arg_name) == expected
-
-
-@pytest.mark.parametrize(
-    "p_dict, expected",
-    (
-            ({"_k": "v", "k": "v"}, {"k": "v"}),
-            ({"__k": "v", "k": "v"}, {"k": "v"}),
-            ({"k1": "v", "k": "v"}, {"k": "v", "k1": "v"}),
-    )
-)
-def test_vars_should_return_right_dict(p_dict, expected):
-    obj = mk_obj(p_dict)
-    assert parser.vars_(
-        obj
-    ) == expected
 
 
 class Testcmd_node:

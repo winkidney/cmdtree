@@ -39,25 +39,6 @@ def _assert_type_valid(name, type_):
         )
 
 
-def vars_(object=None):
-    """
-    Clean all of the property starts with "_" then
-    return result of vars(object).
-    """
-    filtered_vars = {}
-    vars_dict = vars(object)
-    for key, value in six.iteritems(vars_dict):
-        if key.startswith("_"):
-            continue
-        filtered_vars[_normalize_arg_name(key)] = value
-    return filtered_vars
-
-
-class ParserTypes(object):
-    LEAF = "leaf"
-    ROOT = "root"
-
-
 class Argument(object):
     def __init__(self, name, type_, help=None):
         self.name = name
