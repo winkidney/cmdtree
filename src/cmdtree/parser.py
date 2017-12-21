@@ -17,9 +17,10 @@ from cmdtree.types import ParamTypeFactory, STRING
 def _normalize_arg_name(arg_name):
     name_list = list(arg_name)
     new_name_list = []
-    prev = name_list[0]
-    for ele in name_list:
-        if prev == ele == "-":
+    for index, ele in enumerate(name_list):
+        prev_index = index -1 if index != 0 else index
+        prev_ele = name_list[prev_index]
+        if prev_ele == ele == "-":
             continue
         new_name_list.append(ele)
     arg_name = "".join(new_name_list)
