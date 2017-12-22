@@ -137,6 +137,10 @@ class CmdTree(object):
     @classmethod
     def show_node_help(cls, node):
         if not node['cmd'].callable():
+            if node['cmd'].help is not None:
+                echo.error(
+                    node['cmd'].help
+                )
             sub_cmds = [
                 node['name'] for node in node['children'].values()
             ]

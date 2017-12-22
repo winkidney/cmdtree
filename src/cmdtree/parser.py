@@ -2,6 +2,7 @@ import sys
 
 from copy import deepcopy
 
+from cmdtree import echo
 from cmdtree.echo import error
 from cmdtree.exceptions import (
     ParserError, ArgumentRepeatedRegister,
@@ -321,7 +322,10 @@ class RawArgsParser(object):
         return cmd_nodes, full_cmd_path
 
     def run(self):
-        self.cmd_nodes, cmd_path = self.parse2cmd(self.raw_args, self.tree)
+        try:
+            self.cmd_nodes, cmd_path = self.parse2cmd(self.raw_args, self.tree)
+        except ParserError as e:
+            echo.error(e.message)
         kwargs = {}
         for node in self.cmd_nodes:
             kwargs.update(
@@ -329,6 +333,8 @@ class RawArgsParser(object):
             )
         node = self.cmd_nodes[-1]
         cmd = node['cmd']
-        if cmd.callable():
-            return cmd.run(kwargs)
-        self.tree.show_node_help(node)
+        if not cmd.callable():
+            self.tree.show_node_help(node)
+        return cmd.run(kwargs)
+
+
