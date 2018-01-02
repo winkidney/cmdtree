@@ -194,8 +194,9 @@ class CommandNode(object):
     """
     Arg-parse wrapper for sub command and convenient arg parse.
     """
-    def __init__(self, name, help=None, func=None):
+    def __init__(self, name, cmd_path, help=None, func=None):
         self.name = name
+        self.cmd_path = cmd_path
         self.help = help
         self.arg_mgr = ArgumentMgr()
         self.opt_mgr = OptionMgr()

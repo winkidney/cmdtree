@@ -45,5 +45,9 @@ def test_normalize_arg_name(arg_name, expected):
 
 class TestCmdNode:
     def test_should_execute_func(self, test_func):
-        cmd_node = CommandNode(ROOT_NODE_NAME, func=test_func)
+        cmd_node = CommandNode(
+            ROOT_NODE_NAME,
+            cmd_path=[ROOT_NODE_NAME, ],
+            func=test_func,
+        )
         assert cmd_node.run({}) == "result"

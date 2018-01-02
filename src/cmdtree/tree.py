@@ -25,7 +25,10 @@ class CmdTree(object):
         if root_parser is not None:
             root = root_parser
         else:
-            root = CommandNode(name=sys.argv[0])
+            root = CommandNode(
+                name=sys.argv[0],
+                cmd_path=sys.argv[:1]
+            )
         self.tree = {
             "name": root.name,
             "cmd": root,
@@ -83,7 +86,12 @@ class CmdTree(object):
 
     def add_commands(self, cmd_path, func, help=None):
         cmd_name = cmd_path[-1]
-        sub_command = CommandNode(name=cmd_name,  func=func, help=help)
+        sub_command = CommandNode(
+            name=cmd_name,
+            cmd_path=cmd_path,
+            func=func,
+            help=help
+        )
         node = _mk_cmd_node(cmd_name, sub_command)
         self._add_node(node, cmd_path=cmd_path)
         return sub_command
@@ -104,16 +112,20 @@ class CmdTree(object):
         last_one_index = 1
         new_path_len = len(new_path)
         _kwargs = {}
-        for cmd_name in new_path:
+        for index, cmd_name in enumerate(new_path):
+            current_path = existed_path + new_path[:index + 1]
+            parent_path = existed_path + new_path[:index]
             if last_one_index >= new_path_len:
                 _kwargs['help'] = help
             sub_cmd = CommandNode(
-                cmd_name, **_kwargs
+                name=cmd_name,
+                cmd_path=current_path,
+                **_kwargs
             )
             parent_node = _mk_cmd_node(cmd_name, sub_cmd)
             self._add_node(
                 parent_node,
-                existed_path + new_path[:new_path.index(cmd_name)]
+                parent_path,
             )
             last_one_index += 1
         return parent_node
