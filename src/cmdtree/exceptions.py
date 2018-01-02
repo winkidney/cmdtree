@@ -1,5 +1,34 @@
+from cmdtree.format import _format_cmd_choice
+
+
 class ParserError(ValueError):
-    pass
+    DEFAULT_TPL = (
+        "{error}\n\n"
+        "{sub_cmd_help}"
+        "{cmd_ref}"
+        "{help}"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(ParserError, self).__init__(*args)
+        self.node = kwargs.pop("node", None)
+
+    def format_error(self, sub_cmd_help=None):
+        cmd_ref = "Help message for command '{name}':\n\n"
+        node_help = ""
+        _cmd_ref = ""
+        sub_cmd_help = sub_cmd_help or ""
+        if self.node is not None:
+            node_help = self.node.format_help()
+            _cmd_ref = cmd_ref.format(
+                name=self.node.name
+            )
+        return self.DEFAULT_TPL.format(
+            error=str(self),
+            cmd_ref=_cmd_ref,
+            sub_cmd_help=sub_cmd_help,
+            help=node_help,
+        )
 
 
 class DevelopmentError(ValueError):

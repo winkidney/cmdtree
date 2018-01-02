@@ -1,9 +1,7 @@
-from cmdtree import echo
-from cmdtree.constants import ROOT_NODE_NAME
-from cmdtree.echo import format_list
+import sys
+
 from cmdtree.exceptions import NodeDoesExist
 from cmdtree.parser import CommandNode
-from cmdtree.templates import E_NO_CMD_GIVEN_TPL
 
 
 def _mk_cmd_node(cmd_name, cmd_obj):
@@ -25,12 +23,12 @@ class CmdTree(object):
         :type root_parser: cmdtree.parser.CommandNode
         """
         if root_parser is not None:
-            self.root = root_parser
+            root = root_parser
         else:
-            self.root = CommandNode(name=ROOT_NODE_NAME)
+            root = CommandNode(name=sys.argv[0])
         self.tree = {
-            "name": ROOT_NODE_NAME,
-            "cmd": self.root,
+            "name": root.name,
+            "cmd": root,
             "children": {}
         }
 
@@ -85,7 +83,7 @@ class CmdTree(object):
 
     def add_commands(self, cmd_path, func, help=None):
         cmd_name = cmd_path[-1]
-        sub_command = CommandNode(name=cmd_name, func=func, help=help)
+        sub_command = CommandNode(name=cmd_name,  func=func, help=help)
         node = _mk_cmd_node(cmd_name, sub_command)
         self._add_node(node, cmd_path=cmd_path)
         return sub_command
@@ -133,17 +131,3 @@ class CmdTree(object):
             else:
                 return cmd_path.index(key)
         return None
-
-    @classmethod
-    def show_node_help(cls, node):
-        if not node['cmd'].callable():
-            if node['cmd'].help is not None:
-                echo.error(
-                    node['cmd'].help
-                )
-            sub_cmds = [
-                node['name'] for node in node['children'].values()
-            ]
-            return echo.error(
-                E_NO_CMD_GIVEN_TPL % format_list(sub_cmds)
-            )

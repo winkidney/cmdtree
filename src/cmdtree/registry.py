@@ -33,8 +33,4 @@ class ENV(object):
             self._tree = CmdTree()
         return self._tree
 
-    @property
-    def root(self):
-        return self.tree.root
-
 env = ENV()

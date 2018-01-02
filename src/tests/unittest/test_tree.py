@@ -57,7 +57,7 @@ class TestCmdTree:
     ):
         cmd_tree._add_node(cmd_node, ['new_cmd'])
         assert cmd_tree.tree == {
-            "name": "root",
+            "name": mocked_resource.name,
             "cmd": mocked_resource,
             "children": {"new_cmd": cmd_node}
         }
@@ -66,7 +66,7 @@ class TestCmdTree:
         expected_cmd_node = deepcopy(cmd_node)
         expected_cmd_node['children']['child_cmd'] = cmd_node2
         assert cmd_tree.tree == {
-            "name": "root",
+            "name": mocked_resource.name,
             "cmd": mocked_resource,
             "children": {"new_cmd": expected_cmd_node}
         }

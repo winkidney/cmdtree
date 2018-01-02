@@ -12,6 +12,10 @@ from cmdtree.exceptions import (
     NodeDoesExist,
     NoSuchCommand
 )
+from cmdtree.format import format_node_help
+from cmdtree.decorators import format_error
+
+from cmdtree.format import format_arg_help
 from cmdtree.registry import env
 from cmdtree.templates import E_MISSING_ARGUMENT
 from cmdtree.types import ParamTypeFactory, STRING
@@ -83,12 +87,10 @@ class ArgumentMgr(object):
                 if name not in self.parsed_values
             ]
             msg = E_MISSING_ARGUMENT.format(
-                args=" ".join(missed_args)
+                args=", ".join(missed_args)
             )
-            raise ArgumentError(
-                msg
-            )
-
+            return False, msg
+        return True, None
 
     def add(self, name, type_=None, help=None):
         type_ = type_ or STRING
@@ -104,6 +106,15 @@ class ArgumentMgr(object):
             name=name,
             type_=type_,
             help=help,
+        )
+
+    def format_help(self):
+        return format_arg_help(
+            "Positional arguments:",
+            tuple(
+                self.arg_map[name]
+                for name in self.arg_names
+            ),
         )
 
     @property
@@ -156,6 +167,15 @@ class OptionMgr(object):
     def add_value(self, name, value):
         self.parsed_values[name] = value
 
+    def format_help(self):
+        return format_arg_help(
+            "Optional arguments:",
+            tuple(
+                self.opts_map[name]
+                for name in self.opts_names
+            ),
+        )
+
     @property
     def kwargs(self):
         kwargs = {}
@@ -180,6 +200,18 @@ class CommandNode(object):
         self.arg_mgr = ArgumentMgr()
         self.opt_mgr = OptionMgr()
         self.func = func
+
+    def format_help(self):
+        msg = ""
+        arg_help = self.arg_mgr.format_help()
+        opt_help = self.opt_mgr.format_help()
+        if arg_help is not None:
+            msg += "%s" % arg_help
+        if opt_help is not None:
+            msg += "\n\n%s" % opt_help
+        if len(msg) == 0:
+            return "No help found now\n"
+        return msg
 
     @property
     def kwargs(self):
@@ -207,7 +239,8 @@ class CommandNode(object):
                 )
                 if option is None:
                     raise OptionError(
-                        "No such option '%s'" % current_arg
+                        "No such option '%s'" % current_arg,
+                        node=self,
                     )
                 if option.is_flag:
                     self.opt_mgr.add_value(
@@ -222,7 +255,8 @@ class CommandNode(object):
                     )
                 except IndexError:
                     raise ArgumentError(
-                        "No value for argument %s" % option.name
+                        "No value for argument %s" % option.name,
+                        node=self,
                     )
                 index += 1
                 continue
@@ -234,7 +268,12 @@ class CommandNode(object):
                 count - 1,
                 value=current_arg
             )
-        self.arg_mgr.assert_filled()
+        filled, msg = self.arg_mgr.assert_filled()
+        if not filled:
+            raise ArgumentError(
+                msg,
+                node=self,
+            )
         left_args = possible_args[index + 1:]
         eaten_length = args_len - len(left_args)
         return eaten_length, left_args
@@ -290,25 +329,29 @@ class RawArgsParser(object):
         self.tree = tree
         self.cmd_nodes = []
 
-    @staticmethod
-    def parse2cmd(raw_args, tree):
+    def parse2cmd(self, raw_args, tree):
         cmd_nodes = []
         full_cmd_path = []
         left_args = deepcopy(raw_args)
         cmd_start_index = 0
+        node = None
         while True:
             cmd2find = left_args[cmd_start_index:cmd_start_index + 1]
             cmd_path2find = full_cmd_path + cmd2find
             try:
                 node = tree.get_node_by_path(cmd_path2find)
             except NodeDoesExist:
+                error_parent = node if node is not None else tree.tree
                 raise NoSuchCommand(
                     "Command %s does not exist."
-                    % str(
-                        cmd_path2find[-1]
-                        if full_cmd_path
-                        else sys.argv[0]
-                    )
+                    % (
+                        str(
+                            cmd_path2find[-1]
+                            if cmd_path2find
+                            else sys.argv[0]
+                        ),
+                    ),
+                    node=error_parent['cmd'],
                 )
             cmd = node['cmd']
             left_args = left_args[cmd_start_index + 1:]
@@ -321,11 +364,9 @@ class RawArgsParser(object):
                 break
         return cmd_nodes, full_cmd_path
 
+    @format_error
     def run(self):
-        try:
-            self.cmd_nodes, cmd_path = self.parse2cmd(self.raw_args, self.tree)
-        except ParserError as e:
-            echo.error(e.message)
+        self.cmd_nodes, cmd_path = self.parse2cmd(self.raw_args, self.tree)
         kwargs = {}
         for node in self.cmd_nodes:
             kwargs.update(
@@ -334,7 +375,9 @@ class RawArgsParser(object):
         node = self.cmd_nodes[-1]
         cmd = node['cmd']
         if not cmd.callable():
-            self.tree.show_node_help(node)
+            echo.error(
+                format_node_help(node)
+            )
         return cmd.run(kwargs)
 
 

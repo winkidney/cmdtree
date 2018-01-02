@@ -1,3 +1,6 @@
+import sys
+
+from cmdtree.parser import RawArgsParser
 from cmdtree.tree import CmdTree
 
 tree = CmdTree()
@@ -29,4 +32,4 @@ delete3 = tree.add_commands(["computer", "delete"], delete)
 delete3.argument("disk_id")
 
 # run your tree
-tree.root.run()
+RawArgsParser(sys.argv, tree=tree).run()
