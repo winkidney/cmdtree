@@ -12,6 +12,6 @@ def run_server(host):
         )
     )
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     entry()

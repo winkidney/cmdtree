@@ -15,6 +15,7 @@ def run_server(host, reload, port):
         )
     )
 
+
 if __name__ == "__main__":
     from cmdtree import entry
     entry()

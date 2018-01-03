@@ -9,6 +9,9 @@ clean:
 
 test:
 	py.test tests --cov=cmdtree --cov-report=term-missing cmdtree
-
+flake8:
+	flake8 cmdtree
+	flake8 tests
+	flake8 examples
 develop:
 	python setup.py develop

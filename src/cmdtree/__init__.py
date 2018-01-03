@@ -21,3 +21,18 @@ from cmdtree.types import (
 # globals and entry point
 entry = env.entry
 
+__all__ = (
+    "argument",
+    "option",
+    "command",
+    "group",
+    "STRING",
+    "INT",
+    "FLOAT",
+    "BOOL",
+    "UUID",
+    "Choices",
+    "IntRange",
+    "File",
+    "entry",
+)

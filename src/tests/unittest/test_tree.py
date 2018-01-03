@@ -124,10 +124,8 @@ class TestCmdTree:
             cmd_tree
     ):
         cmd_tree.add_parent_commands(['new_cmd', 'hello'])
-        assert "hello" in \
-               cmd_tree.root['children']['new_cmd']['children']
-        assert {} == \
-               cmd_tree.root['children']['new_cmd']['children']["hello"]['children']
+        assert "hello" in cmd_tree.root['children']['new_cmd']['children']
+        assert cmd_tree.root['children']['new_cmd']['children']["hello"]['children'] == {}
 
     def test_should_cmd_tree_get_cmd_by_path_got_obj(
             self, cmd_tree_with_tree

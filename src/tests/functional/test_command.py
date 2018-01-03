@@ -1,4 +1,3 @@
-import pytest
 from cmdtree import INT, entry
 from cmdtree import command, argument, option
 

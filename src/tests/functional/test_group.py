@@ -1,7 +1,4 @@
-from cmdtree import Choices
-from cmdtree import command
 from cmdtree import group, argument, entry
-from cmdtree import option
 
 
 @group("docker")
@@ -37,4 +34,3 @@ def test_nested_group_works():
     assert entry(
         ["docker", "0.0.0.0", "image", "create", "test_image"]
     ) == ("0.0.0.0", "test_image")
-

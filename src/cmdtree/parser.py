@@ -2,7 +2,6 @@ import sys
 
 from copy import deepcopy
 
-from cmdtree import echo
 from cmdtree.echo import error
 from cmdtree.exceptions import (
     ParserError, ArgumentRepeatedRegister,
@@ -25,7 +24,7 @@ def _normalize_arg_name(arg_name):
     name_list = list(arg_name)
     new_name_list = []
     for index, ele in enumerate(name_list):
-        prev_index = index -1 if index != 0 else index
+        prev_index = index - 1 if index != 0 else index
         prev_ele = name_list[prev_index]
         if prev_ele == ele == "-":
             continue
@@ -385,5 +384,3 @@ class RawArgsParser(object):
                 node=node['cmd']
             )
         return cmd.run(kwargs)
-
-
