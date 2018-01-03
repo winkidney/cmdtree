@@ -1,6 +1,15 @@
-from textwrap import indent
-
 from cmdtree.templates import E_NO_CMD_GIVEN_TPL
+
+try:
+    from textwrap import indent
+except ImportError:
+    import textwrap
+    def indent(text, indent_with):
+        wrapper = textwrap.TextWrapper(
+            initial_indent=indent_with,
+            subsequent_indent=indent_with
+        )
+        return wrapper.fill(text)
 
 
 INDENT_1 = " " * 4
