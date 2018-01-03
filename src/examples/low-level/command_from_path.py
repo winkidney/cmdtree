@@ -27,7 +27,7 @@ tree_node = tree.get_node_by_path(["computer", "show"])
 show_parser = tree_node['cmd']
 show_parser.argument("disk_id")
 
-# Add delete command
+# Add deleted command
 delete3 = tree.add_commands(["computer", "delete"], delete)
 delete3.argument("disk_id")
 

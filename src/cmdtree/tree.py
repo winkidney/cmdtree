@@ -70,10 +70,19 @@ class CmdTree(object):
         :type cmd_path: list or tuple
         """
         parent = self.root
-        for cmd_key in cmd_path:
+        path_len = len(cmd_path)
+        index = 0
+        for index, cmd_key in enumerate(cmd_path):
             if cmd_key not in parent['children']:
                 break
             parent = parent['children'][cmd_key]
+        if path_len != 0:
+            if (index + 1) != path_len:
+                raise ValueError(
+                    "Failed to add node {path}, parent not existed.".format(
+                        path=cmd_path
+                    )
+                )
         parent["children"][cmd_node['name']] = cmd_node
         return cmd_node
 
