@@ -10,7 +10,8 @@ from cmdtree.exceptions import (
     ArgumentError,
     OptionError,
     NodeDoesExist,
-    NoSuchCommand
+    NoSuchCommand,
+    InvalidCommand
 )
 from cmdtree.format import format_node_help
 from cmdtree.decorators import format_error
@@ -196,7 +197,8 @@ class CommandNode(object):
     """
     def __init__(self, cmd_path, help=None, func=None):
         self.name = cmd_path[-1]
-        self.cmd_path = cmd_path
+        self.abs_path = cmd_path
+        self.relative_path = cmd_path[1:]
         self.help = help
         self.arg_mgr = ArgumentMgr()
         self.opt_mgr = OptionMgr()
@@ -210,8 +212,6 @@ class CommandNode(object):
             msg += "%s" % arg_help
         if opt_help is not None:
             msg += "\n\n%s" % opt_help
-        if len(msg) == 0:
-            return "No help found :)\n"
         return msg
 
     @property
@@ -379,8 +379,9 @@ class RawArgsParser(object):
         node = self.cmd_nodes[-1]
         cmd = node['cmd']
         if not cmd.callable():
-            echo.error(
-                format_node_help(node)
+            raise InvalidCommand(
+                "Invalid command %s" % node['name'],
+                node=node['cmd']
             )
         return cmd.run(kwargs)
 

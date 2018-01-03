@@ -31,12 +31,15 @@ def _format_cmd_help(cmd_node):
     )
 
 
-def _format_cmd_choice(cmd_node_list):
+def _format_cmd_choice(parent_name, cmd_node_list):
     help_msg = "\n".join(
         _format_cmd_help(ele)
         for ele in cmd_node_list
     )
-    return E_NO_CMD_GIVEN_TPL % indent(help_msg, INDENT_1)
+    return E_NO_CMD_GIVEN_TPL.format(
+        name=parent_name,
+        cmds=indent(help_msg, INDENT_1)
+    )
 
 
 def format_node_help(tree_node):
@@ -53,7 +56,7 @@ def format_node_help(tree_node):
             for value in node['children'].values()
         )
         if len(cmds) >= 0:
-            _help += _format_cmd_choice(cmds)
+            _help += _format_cmd_choice(node['name'], cmds)
     return _help if len(_help) > 0 else None
 
 
