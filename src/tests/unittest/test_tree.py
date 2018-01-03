@@ -56,7 +56,7 @@ class TestCmdTree:
             self, cmd_tree, mocked_resource, cmd_node, cmd_node2
     ):
         cmd_tree._add_node(cmd_node, ['new_cmd'])
-        assert cmd_tree.tree == {
+        assert cmd_tree.root == {
             "name": mocked_resource.name,
             "cmd": mocked_resource,
             "children": {"new_cmd": cmd_node}
@@ -65,7 +65,7 @@ class TestCmdTree:
         cmd_tree._add_node(cmd_node2, ['new_cmd', 'child_cmd'])
         expected_cmd_node = deepcopy(cmd_node)
         expected_cmd_node['children']['child_cmd'] = cmd_node2
-        assert cmd_tree.tree == {
+        assert cmd_tree.root == {
             "name": mocked_resource.name,
             "cmd": mocked_resource,
             "children": {"new_cmd": expected_cmd_node}
@@ -123,9 +123,9 @@ class TestCmdTree:
     ):
         cmd_tree.add_parent_commands(['new_cmd', 'hello'])
         assert "hello" in \
-               cmd_tree.tree['children']['new_cmd']['children']
+               cmd_tree.root['children']['new_cmd']['children']
         assert {} == \
-               cmd_tree.tree['children']['new_cmd']['children']["hello"]['children']
+               cmd_tree.root['children']['new_cmd']['children']["hello"]['children']
 
     def test_should_cmd_tree_get_cmd_by_path_got_obj(
             self, cmd_tree_with_tree

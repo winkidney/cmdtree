@@ -194,8 +194,8 @@ class CommandNode(object):
     """
     Arg-parse wrapper for sub command and convenient arg parse.
     """
-    def __init__(self, name, cmd_path, help=None, func=None):
-        self.name = name
+    def __init__(self, cmd_path, help=None, func=None):
+        self.name = cmd_path[-1]
         self.cmd_path = cmd_path
         self.help = help
         self.arg_mgr = ArgumentMgr()
@@ -211,7 +211,7 @@ class CommandNode(object):
         if opt_help is not None:
             msg += "\n\n%s" % opt_help
         if len(msg) == 0:
-            return "No help found now\n"
+            return "No help found :)\n"
         return msg
 
     @property
@@ -342,7 +342,7 @@ class RawArgsParser(object):
             try:
                 node = tree.get_node_by_path(cmd_path2find)
             except NodeDoesExist:
-                error_parent = node if node is not None else tree.tree
+                error_parent = node if node is not None else tree.root
                 raise NoSuchCommand(
                     "Command %s does not exist."
                     % (
@@ -367,7 +367,10 @@ class RawArgsParser(object):
 
     @format_error
     def run(self):
-        self.cmd_nodes, cmd_path = self.parse2cmd(self.raw_args, self.tree)
+        self.cmd_nodes, cmd_path = self.parse2cmd(
+            self.raw_args,
+            self.tree,
+        )
         kwargs = {}
         for node in self.cmd_nodes:
             kwargs.update(

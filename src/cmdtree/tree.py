@@ -26,10 +26,9 @@ class CmdTree(object):
             root = root_parser
         else:
             root = CommandNode(
-                name=sys.argv[0],
                 cmd_path=sys.argv[:1]
             )
-        self.tree = {
+        self.root = {
             "name": root.name,
             "cmd": root,
             "children": {}
@@ -51,9 +50,9 @@ class CmdTree(object):
             "children": {}
         }
         """
-        parent = self.tree
+        parent = self.root
         if len(existed_cmd_path) == 0:
-            return self.tree
+            return self.root
         for cmd_name in existed_cmd_path:
             try:
                 parent = parent['children'][cmd_name]
@@ -68,7 +67,7 @@ class CmdTree(object):
         """
         :type cmd_path: list or tuple
         """
-        parent = self.tree
+        parent = self.root
         for cmd_key in cmd_path:
             if cmd_key not in parent['children']:
                 break
@@ -85,14 +84,12 @@ class CmdTree(object):
         return new_path, existed_path
 
     def add_commands(self, cmd_path, func, help=None):
-        cmd_name = cmd_path[-1]
         sub_command = CommandNode(
-            name=cmd_name,
             cmd_path=cmd_path,
             func=func,
             help=help
         )
-        node = _mk_cmd_node(cmd_name, sub_command)
+        node = _mk_cmd_node(sub_command.name, sub_command)
         self._add_node(node, cmd_path=cmd_path)
         return sub_command
 
@@ -112,17 +109,16 @@ class CmdTree(object):
         last_one_index = 1
         new_path_len = len(new_path)
         _kwargs = {}
-        for index, cmd_name in enumerate(new_path):
+        for index, _ in enumerate(new_path):
             current_path = existed_path + new_path[:index + 1]
             parent_path = existed_path + new_path[:index]
             if last_one_index >= new_path_len:
                 _kwargs['help'] = help
             sub_cmd = CommandNode(
-                name=cmd_name,
                 cmd_path=current_path,
                 **_kwargs
             )
-            parent_node = _mk_cmd_node(cmd_name, sub_cmd)
+            parent_node = _mk_cmd_node(sub_cmd.name, sub_cmd)
             self._add_node(
                 parent_node,
                 parent_path,
@@ -136,7 +132,7 @@ class CmdTree(object):
         :type cmd_path: list or tuple
         :return: None if cmd_path already indexed in tree.
         """
-        current_tree = self.tree
+        current_tree = self.root
         for key in cmd_path:
             if key in current_tree['children']:
                 current_tree = current_tree['children'][key]
