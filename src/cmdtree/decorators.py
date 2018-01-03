@@ -12,5 +12,6 @@ def format_error(func):
             return func(*args, **kwargs)
         except ParserError as e:
             echo.error("Error: %s" % str(e.format_error()))
+            exit(1)
 
     return wrapped
