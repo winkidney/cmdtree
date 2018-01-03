@@ -30,7 +30,9 @@ def cmd_tree(mocked_resource):
 
 @pytest.fixture
 def mocked_resource():
-    return mock.Mock()
+    root = mock.Mock()
+    root.is_root = True
+    return root
 
 
 @pytest.fixture

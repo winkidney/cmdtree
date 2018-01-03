@@ -14,7 +14,7 @@ def format_error(func):
         except ParserError as e:
             assert hasattr(args[0], "tree")
             node_dict = args[0].tree.get_node_by_path(
-                e.node.relative_path[1:]
+                e.node.cmd_path
             )
             node_help = format_node_help(node_dict)
             echo.error("Error: %s" % str(e.format_error(node_help)))

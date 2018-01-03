@@ -13,7 +13,6 @@ from cmdtree.exceptions import (
     NoSuchCommand,
     InvalidCommand
 )
-from cmdtree.format import format_node_help
 from cmdtree.decorators import format_error
 
 from cmdtree.format import format_arg_help
@@ -195,10 +194,12 @@ class CommandNode(object):
     """
     Arg-parse wrapper for sub command and convenient arg parse.
     """
-    def __init__(self, cmd_path, help=None, func=None):
+    def __init__(self, cmd_path, help=None, func=None, is_root=False):
+        self.is_root = is_root
         self.name = cmd_path[-1]
-        self.abs_path = cmd_path
-        self.relative_path = cmd_path[1:]
+        self.cmd_path = cmd_path
+        if is_root:
+            self.abs_path = []
         self.help = help
         self.arg_mgr = ArgumentMgr()
         self.opt_mgr = OptionMgr()
@@ -380,7 +381,7 @@ class RawArgsParser(object):
         cmd = node['cmd']
         if not cmd.callable():
             raise InvalidCommand(
-                "Invalid command %s" % node['name'],
+                "%s is a command-group" % node['name'],
                 node=node['cmd']
             )
         return cmd.run(kwargs)

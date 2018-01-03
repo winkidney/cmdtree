@@ -12,10 +12,13 @@ class ParserError(ValueError):
         self.node = kwargs.pop("node", None)
 
     def format_error(self, sub_cmd_help=None):
-        cmd_ref = "Help message for command '{name}':\n\n"
+        cmd_ref = "Help message for '{name}':\n\n"
         node_help = ""
         _cmd_ref = ""
-        sub_cmd_help = sub_cmd_help + "\n" or ""
+        if sub_cmd_help is not None:
+            sub_cmd_help = sub_cmd_help + "\n"
+        else:
+            sub_cmd_help = ""
         if self.node is not None:
             node_help = self.node.format_help()
             if node_help:

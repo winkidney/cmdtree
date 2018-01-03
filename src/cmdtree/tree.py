@@ -26,8 +26,10 @@ class CmdTree(object):
             root = root_parser
         else:
             root = CommandNode(
-                cmd_path=sys.argv[:1]
+                cmd_path=sys.argv[:1],
+                is_root=True,
             )
+        assert root.is_root is True
         self.root = {
             "name": root.name,
             "cmd": root,
